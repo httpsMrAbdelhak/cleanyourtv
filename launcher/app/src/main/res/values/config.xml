@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Apps pinned to the dock row at the bottom, in this order. -->
     <string-array name="dock_apps">
         <item>com.nuvio.tv</item>
         <item>com.netflix.ninja</item>
@@ -19,17 +21,34 @@
 
     <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
     <string name="live_tv_action" translatable="false"></string>
-    <string-array name="launch_actions"></string>
-    <string-array name="app_labels"></string>
-    <string-array name="app_banners"></string>
+
+    <string-array name="launch_actions">
+    </string-array>
+
+    <string-array name="app_labels">
+    </string-array>
+
+    <string-array name="app_banners">
+    </string-array>
+
     <string name="source_panel_service" translatable="false"></string>
     <string name="source_panel_action" translatable="false"></string>
     <string name="input_action" translatable="false"></string>
-    <integer-array name="settings_key_scancodes"></integer-array>
-    <integer-array name="settings_key_keycodes"></integer-array>
+
+    <integer-array name="settings_key_scancodes">
+    </integer-array>
+
+    <integer-array name="settings_key_keycodes">
+    </integer-array>
+
     <bool name="settings_key_panel">false</bool>
-    <integer-array name="input_key_keycodes"></integer-array>
-    <string-array name="app_keys" translatable="false"></string-array>
+
+    <integer-array name="input_key_keycodes">
+    </integer-array>
+
+    <string-array name="app_keys" translatable="false">
+    </string-array>
+
     <bool name="shamsi_date">false</bool>
     <string name="greeting_name" translatable="false"></string>
     <string name="vpn_app" translatable="false"></string>
@@ -47,6 +66,8 @@
     <bool name="module_cards">true</bool>
     <bool name="reduced_motion">false</bool>
     <bool name="show_stats">false</bool>
+
     <integer name="sky_intensity">30</integer>
     <bool name="cinematic_home">true</bool>
+
 </resources>
