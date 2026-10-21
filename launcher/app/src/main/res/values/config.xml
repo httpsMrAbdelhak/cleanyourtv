@@ -129,7 +129,7 @@
 
     <!-- Optional Default-home tile; keep this key for existing themes and tile-ordering work.
          Off by default because the chooser is also available from launcher settings. -->
-    <bool name="show_home_settings_shortcut">false</bool>
+    <bool name="show_home_settings_shortcut">true</bool>
 
     <!-- Installed launchable apps, including ordinary Android apps. Also settable in config.json. -->
     <bool name="app_library">false</bool>
