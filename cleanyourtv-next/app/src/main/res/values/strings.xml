@@ -4,8 +4,6 @@
     <string name="greeting_morning">Good morning</string>
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
-    <string name="tab_home">Home</string>
-    <string name="tab_cinema">Cinema</string>
     <string name="tab_weather">Weather</string>
     <string name="dock_all_apps">All apps</string>
     <string name="library_title">Apps</string>
@@ -20,10 +18,6 @@
     <string name="toast_launch_failed">This app cannot be opened</string>
     <string name="toast_animation_off">The animation was too slow for this TV and is now off.</string>
     <string name="toast_dock_reset">Dock reset</string>
-    <string name="rail_trending">Trending this week</string>
-    <string name="rail_movies">Popular movies</string>
-    <string name="rail_series">Popular series</string>
-    <string name="rail_new">New in theatres</string>
     <string name="kind_movie">Movie</string>
     <string name="kind_series">Series</string>
     <string name="tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
@@ -38,7 +32,6 @@
     <string name="detail_no_overview">No synopsis available.</string>
     <string name="detail_no_playback">Playback is not available here: TMDB describes films and series but gives no link to watch them. Open your streaming app to watch.</string>
     <string name="weather_no_city">Choose a city in Settings to see the weather. The location of the device is never used.</string>
-    <string name="weather_loading">Loading the weather…</string>
     <string name="weather_offline">No network connection, and no saved forecast to show.</string>
     <string name="weather_failed">The weather service did not answer correctly. Try again in a moment.</string>
     <string name="weather_range">High %1$s  ·  Low %2$s</string>
@@ -129,4 +122,20 @@
     <string name="wallpaper_pick_failed">The picture could not be read.</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="tab_explore">Explore</string>
+    <string name="tab_movies">Movies</string>
+    <string name="tab_series">Series</string>
+    <string name="tmdb_provider_missing">No %1$s catalogue found at TMDB: showing what is popular</string>
+    <string name="youtube_no_key">Add a YouTube API key in Settings to see the most popular videos. Nothing is shown without one.</string>
+    <string name="youtube_bad_key">YouTube refused the key, or its daily quota is used up. Check it in Settings.</string>
+    <string name="youtube_offline">No network connection, and no saved videos to show.</string>
+    <string name="youtube_failed">YouTube did not answer correctly. Try again in a moment.</string>
+    <string name="youtube_attribution">Most popular videos, from the YouTube Data API</string>
+    <string name="settings_youtube_key">YouTube API key</string>
+    <string name="settings_youtube_hint">A free key from Google Cloud (enable "YouTube Data API v3"). It lets the YouTube tile show popular videos.</string>
+    <string name="status_youtube">YouTube</string>
+    <string name="detail_open_app">Open %1$s</string>
+    <string name="wallpaper_pearl">Pearl</string>
+    <string name="wallpaper_cloud">Cloud</string>
+    <string name="wallpaper_dawn">Dawn</string>
 </resources>

@@ -32,6 +32,7 @@ final class GlassDrawable extends Drawable {
     private final Paint shade = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint tint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint hairline = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
     private final Matrix matrix = new Matrix();
     private final int[] where = new int[2];
@@ -48,20 +49,23 @@ final class GlassDrawable extends Drawable {
         this.sample = sampleBackdrop;
         this.bright = bright;
         this.frosted = effects.frostedGlass();
-        shade.setColor(0x38000000);
-        fill.setColor(bright ? 0x66303644 : 0x4A1E222C);
+        shade.setColor(Palette.GLASS_SHADE);
+        fill.setColor(bright ? Palette.GLASS_FILL_BRIGHT : Palette.GLASS_FILL);
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(strokePx);
+        hairline.setStyle(Paint.Style.STROKE);
+        hairline.setStrokeWidth(strokePx + Math.max(1f, strokePx * 0.6f));
+        hairline.setColor(Palette.HAIRLINE);
     }
 
     @Override
     protected void onBoundsChange(Rect bounds) {
-        int top = bright ? 0x4DFFFFFF : 0x2EFFFFFF;
-        int bottom = bright ? 0x1AFFFFFF : 0x0DFFFFFF;
+        int top = bright ? Palette.TINT_TOP_BRIGHT : Palette.TINT_TOP;
+        int bottom = bright ? Palette.TINT_BOTTOM_BRIGHT : Palette.TINT_BOTTOM;
         tint.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom, top, bottom, Shader.TileMode.CLAMP));
-        int lit = bright ? 0xCCFFFFFF : 0x80FFFFFF;
+        int lit = bright ? Palette.EDGE_LIT_BRIGHT : Palette.EDGE_LIT;
         edge.setShader(new LinearGradient(bounds.left, bounds.top, bounds.right, bounds.bottom,
-                new int[] {lit, 0x14FFFFFF, 0x3DFFFFFF}, new float[] {0f, 0.55f, 1f}, Shader.TileMode.CLAMP));
+                new int[] {lit, Palette.EDGE_MID, Palette.EDGE_END}, new float[] {0f, 0.55f, 1f}, Shader.TileMode.CLAMP));
     }
 
     @Override
@@ -90,6 +94,7 @@ final class GlassDrawable extends Drawable {
         }
         if (!drawn) canvas.drawRoundRect(rect, radius, radius, fill);
         canvas.drawRoundRect(rect, radius, radius, tint);
+        if (Palette.HAIRLINE != 0) canvas.drawRoundRect(rect, radius, radius, hairline);
         canvas.drawRoundRect(rect, radius, radius, edge);
     }
 

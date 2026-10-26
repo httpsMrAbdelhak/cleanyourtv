@@ -34,19 +34,22 @@ public final class SettingsActivity extends Activity {
     private interface Step { void apply(int direction); }
 
     private Prefs prefs;
+    private boolean builtLight;
     private LinearLayout rows;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = new Prefs(this);
+        Palette.apply(prefs);
+        builtLight = Palette.light;
         getWindow().setBackgroundDrawable(Wallpaper.load(this, prefs));
 
         int margin = Ui.dp(this, 48);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(margin, margin, margin, 0);
-        page.setBackgroundColor(0x80000000);
+        page.setBackgroundColor((Palette.BACKGROUND & 0xFFFFFF) | 0x80000000);
 
         TextView title = Ui.text(this, 36, Palette.TEXT, Ui.light(this));
         title.setText(R.string.settings_title);
@@ -68,6 +71,10 @@ public final class SettingsActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (Palette.apply(prefs) || builtLight != Palette.light) {
+            recreate();
+            return;
+        }
         refresh();
     }
 
@@ -154,8 +161,14 @@ public final class SettingsActivity extends Activity {
         keyRow.setOnClickListener(v -> editText(R.string.settings_tmdb_key, prefs.tmdbKey(), true, text -> prefs.setTmdbKey(text)));
         addRow(R.string.settings_tmdb_hint, null, null).setFocusable(false);
 
+        View youtubeRow = addRow(R.string.settings_youtube_key, () -> prefs.youtubeKey().isEmpty()
+                ? getString(R.string.settings_none) : getString(R.string.key_set), null);
+        youtubeRow.setOnClickListener(v -> editText(R.string.settings_youtube_key, prefs.youtubeKey(), true, text -> prefs.setYoutubeKey(text)));
+        addRow(R.string.settings_youtube_hint, null, null).setFocusable(false);
+
         section(R.string.section_status);
         addRow(R.string.status_tmdb, () -> statusText(prefs.status("tmdb")), null);
+        addRow(R.string.status_youtube, () -> statusText(prefs.status("youtube")), null);
         addRow(R.string.status_weather, () -> statusText(prefs.status("weather")), null);
         addRow(R.string.status_resume, () -> getString(ResumeRegistry.available()
                 ? R.string.status_resume_on : R.string.status_resume_off), null);

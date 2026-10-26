@@ -5,17 +5,25 @@ Plain Java on the Android framework. No AndroidX, no Kotlin, no layout XML: ever
 ## Screens
 
 ```
-HomeActivity          host: wallpaper, ambient light, three pages, tab bar, focus and Back rules
-  HomePage            clock, date, glass dock
-  CinemaPage          backdrop + rails of posters (TMDB)
-  WeatherPage         current weather + seven days (Open-Meteo)
-LibraryActivity       every installed app (opened from the dock)
+HomeActivity          host: the wallpaper under one HomeScreen; rebuilds when the theme flips
+  HomeScreen          header (greeting, tabs, clock, two buttons), content panel, glass dock, ambient light
+    ContentPanel      the panel above the dock: films, videos or weather, depending on the dock selection
+      CardRail        a row of cards (wide, poster, video thumbnail), loaded near the focus only
+      WeatherPanel    current weather and seven days on one glass card
+LibraryActivity       every installed app (the grid button)
 SettingsActivity      sections of rows; every change saved at once
 WallpaperActivity     gallery with live preview; picture from the device
-DetailActivity        one film or series
+DetailActivity        one film or series, with an "Open <app>" button when it came from a service
 ```
 
-Only the shown page is visible: the others are `GONE`, take no focus, and free their images.
+What the panel shows (`HomeScreen.select`, `ProviderMap`):
+
+| Dock tile | Panel |
+|---|---|
+| a known streaming app | that service's films and series (TMDB `discover` with the provider id found by name in TMDB's own provider list, never hard-coded) |
+| YouTube (`com.google.android.youtube.tv`, SmartTube) | most popular videos (YouTube Data API) |
+| the weather tile | the weather |
+| any other app | trending on TMDB |
 
 ## Design system
 
@@ -28,6 +36,8 @@ Only the shown page is visible: the others are `GONE`, take no focus, and free t
 | `SceneDrawable` | A wallpaper made of soft radial lights over a dark gradient: no bitmap, sharp at any size. Animated only by moving the lights along a seamless loop. |
 | `WallpaperView` | Draws the wallpaper and two shades. Animates at about 15 fps, only while visible, and falls back to the still picture for good if the TV cannot keep up. |
 | Outfit font | Variable font, SIL OFL. Loaded once. |
+| `Palette` | Light or dark, chosen by the wallpaper (`Wallpaper.isLight`). Applied before any view is built; a flip rebuilds the screen. |
+| `Ui.unit` | The screen is laid out as 960 units wide whatever its density (a TV set to 320 dpi or 213 dpi looks the same). |
 
 Two effect levels (`Effects`): **Quality** (frosted glass, optional animation, sharper posters) and **Performance** (flat glass, still wallpaper, 16-bit smaller posters).
 
@@ -37,14 +47,14 @@ Android 9 has no cheap live background blur (`RenderEffect` is Android 12). Re-b
 
 ## Remote navigation
 
-Focus uses Android's own search, with explicit rules where a mistake would lose it:
+Three zones (`NavLogic`): header on top, panel in the middle, dock at the bottom. The dock has the focus at start.
 
-- **Tab bar**: Left and Right move over the tabs and the page follows; Down enters the page; Up does nothing.
-- **Dock**: Left and Right move, stopping at both ends; Up goes to the tab bar; Down does nothing (no app grid opens by surprise); OK opens; long OK or Menu edits.
-- **Rails**: Left and Right glide along the rail and stop at the ends; Up and Down change rail, Up on the first rail goes to the tab bar; OK opens the detail screen.
-- **Back**: from content to the tab bar, from another tab to Home, on Home nothing (`NavLogic`).
-- **Home key** while already on Home: back to the Home tab, on the first dock icon.
-- After an app closes, `onResume` gives the focus back if it is gone.
+- **Dock**: Left and Right move and stop at both ends; Up goes to the panel (or the header when the panel is empty); Down does nothing, so no app grid ever opens by surprise; OK opens the app; long OK or Menu edits.
+- **Panel**: Left and Right glide along the cards and stop at the ends; Up goes to the header; Down returns to the dock.
+- **Header**: Down enters the panel. The three tabs only apply to film panels: elsewhere they are dimmed and skipped.
+- **Back**: from the panel or the header it goes down to the dock; on the dock it does nothing.
+- **Home key** while already on Home: back to the dock.
+- The panel changes 220 ms after the focus rests on a tile, so crossing the dock fast does not start a load per tile; a late answer for a tile already left is dropped.
 
 ## Network and memory (about 1 GB of RAM)
 
@@ -58,5 +68,6 @@ Focus uses Android's own search, with explicit rules where a mistake would lose 
 
 - **A wallpaper**: implement `WallpaperSource`, add it to `Wallpapers.ALL`, add its name to both `strings.xml`. The gallery lists it.
 - **An accent colour**: one line in `Accents.ALL` and its name in both `strings.xml`.
+- **A streaming service**: add its package and TMDB provider names to `ProviderMap.SERVICES`.
 - **A "Continue watching" source**: implement `ResumeSource` and add it to `ResumeRegistry` (see `PLAYBACK.md`).
 - **A language**: add `values-xx/strings.xml` with every name of `values/strings.xml` and add `xx` to `resourceConfigurations` in `app/build.gradle`.

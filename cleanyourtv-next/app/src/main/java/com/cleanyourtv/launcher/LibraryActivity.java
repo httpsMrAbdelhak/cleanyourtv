@@ -20,6 +20,7 @@ import java.util.List;
  */
 public final class LibraryActivity extends Activity {
     private Prefs prefs;
+    private boolean builtLight;
     private LinearLayout content;
     private TextView title;
 
@@ -27,13 +28,15 @@ public final class LibraryActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = new Prefs(this);
+        Palette.apply(prefs);
+        builtLight = Palette.light;
         getWindow().setBackgroundDrawable(Wallpaper.load(this, prefs));
 
         int margin = Ui.dp(this, 48);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(margin, margin, margin, 0);
-        page.setBackgroundColor(0x70000000);
+        page.setBackgroundColor((Palette.BACKGROUND & 0xFFFFFF) | 0x80000000);
 
         title = Ui.text(this, 36, Palette.TEXT, Ui.light(this));
         title.setText(R.string.library_title);
@@ -55,6 +58,10 @@ public final class LibraryActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (Palette.apply(prefs) || builtLight != Palette.light) {
+            recreate();
+            return;
+        }
         AppRepository.loadAsync(this, prefs.includeNonTvApps(), apps -> {
             if (isDestroyed() || isFinishing()) return;
             populate(apps);

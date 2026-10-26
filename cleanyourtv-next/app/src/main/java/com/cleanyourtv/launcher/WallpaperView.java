@@ -24,9 +24,9 @@ final class WallpaperView extends View {
     }
 
     private final GradientDrawable top = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-            new int[] {0x66000000, 0x00000000});
+            new int[] {Palette.SHADE_TOP, Palette.SHADE_TOP & 0x00FFFFFF});
     private final GradientDrawable bottom = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-            new int[] {0x00000000, 0xB0000000});
+            new int[] {Palette.SHADE_BOTTOM & 0x00FFFFFF, Palette.SHADE_BOTTOM});
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Drawable wallpaper;
     private SceneDrawable scene;

@@ -34,9 +34,12 @@ final class SceneSpec {
 
     final int top;
     final int bottom;
+    /** A pale wallpaper: the interface then uses dark text on light glass. */
+    final boolean light;
     final Blob[] blobs;
 
-    SceneSpec(int top, int bottom, Blob... blobs) {
+    SceneSpec(boolean light, int top, int bottom, Blob... blobs) {
+        this.light = light;
         this.top = top;
         this.bottom = bottom;
         this.blobs = blobs;

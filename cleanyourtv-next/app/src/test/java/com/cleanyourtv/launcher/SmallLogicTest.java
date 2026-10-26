@@ -87,16 +87,24 @@ public class SmallLogicTest {
         assertEquals("dusk", Wallpapers.byId("dusk").id());
     }
 
-    @Test public void everySceneHasLightsAndADarkBase() {
+    @Test public void everySceneHasLightsAndABaseThatMatchesItsTheme() {
+        int light = 0;
         for (WallpaperSource source : Wallpapers.ALL) {
             SceneSpec spec = ((SceneWallpaper) source).spec();
             assertTrue(source.id(), spec.blobs.length >= 2);
-            assertTrue(source.id() + " base must stay dark", brightness(spec.top) < 40 && brightness(spec.bottom) < 40);
+            if (spec.light) {
+                light++;
+                assertTrue(source.id() + " must be pale", brightness(spec.top) > 200 && brightness(spec.bottom) > 190);
+            } else {
+                assertTrue(source.id() + " must stay dark", brightness(spec.top) < 40 && brightness(spec.bottom) < 40);
+            }
             for (SceneSpec.Blob blob : spec.blobs) {
                 assertTrue(source.id(), blob.speedX >= 1 && blob.speedY >= 1);
                 assertTrue(source.id(), blob.radius > 0.1f && blob.squash > 0.1f);
             }
         }
+        assertTrue("the clean light look must be offered", light >= 2);
+        assertTrue("and it is the default", ((SceneWallpaper) Wallpapers.ALL[0]).light());
     }
 
     private static int brightness(int argb) {

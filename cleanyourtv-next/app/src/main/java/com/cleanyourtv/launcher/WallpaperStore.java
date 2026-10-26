@@ -31,8 +31,11 @@ final class WallpaperStore {
         return file(context).isFile();
     }
 
-    /** Copies the picked picture, scaled down to at most 1920x1080. Throws when it cannot be read as an image. */
-    static void save(Context context, Uri source) throws IOException {
+    /**
+     * Copies the picked picture, scaled down to at most 1920x1080. Throws when it cannot be read as an image.
+     * Returns whether the picture is pale (the interface then switches to dark text).
+     */
+    static boolean save(Context context, Uri source) throws IOException {
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
         try (InputStream in = context.getContentResolver().openInputStream(source)) {
@@ -49,12 +52,18 @@ final class WallpaperStore {
         }
         if (bitmap == null) throw new IOException("decode failed");
         File tmp = new File(context.getFilesDir(), FILE + ".tmp");
+        boolean light;
         try (FileOutputStream out = new FileOutputStream(tmp)) {
+            Bitmap small = Bitmap.createScaledBitmap(bitmap, 32, 18, true);
+            int[] pixels = new int[32 * 18];
+            small.getPixels(pixels, 0, 32, 0, 0, 32, 18);
+            light = Luma.isLight(pixels);
             if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) throw new IOException("encode failed");
         } finally {
             bitmap.recycle();
         }
         if (!tmp.renameTo(file(context))) throw new IOException("rename failed");
+        return light;
     }
 
     /** The saved picture as a drawable, or null when there is none or it cannot be read. */

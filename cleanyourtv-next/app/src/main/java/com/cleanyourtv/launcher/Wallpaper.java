@@ -16,6 +16,14 @@ final class Wallpaper {
         return Wallpapers.byId(prefs.wallpaperId()).load(context);
     }
 
+    /** Whether the saved wallpaper is pale, so that the interface uses dark text on it. */
+    static boolean isLight(Prefs prefs) {
+        String id = prefs.wallpaperId();
+        if (Wallpapers.CUSTOM.equals(id)) return prefs.customWallpaperLight();
+        WallpaperSource source = Wallpapers.byId(id);
+        return source instanceof SceneWallpaper && ((SceneWallpaper) source).light();
+    }
+
     /** Whether the saved wallpaper may drift (a scene, not a picture) and the user allows it. */
     static boolean animated(Prefs prefs) {
         return prefs.animatedWallpaper() && prefs.effects().allowsAnimatedWallpaper()

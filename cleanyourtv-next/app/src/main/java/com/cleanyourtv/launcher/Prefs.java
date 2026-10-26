@@ -20,6 +20,8 @@ final class Prefs {
     private static final String CITY_LAT = "city_lat";
     private static final String CITY_LON = "city_lon";
     private static final String TMDB_KEY = "tmdb_key";
+    private static final String CUSTOM_LIGHT = "custom_light";
+    private static final String YOUTUBE_KEY = "youtube_key";
     private static final String STATUS_PREFIX = "status_";
 
     private final SharedPreferences prefs;
@@ -61,6 +63,23 @@ final class Prefs {
 
     void setWallpaperId(String id) {
         prefs.edit().putString(WALLPAPER, id).apply();
+    }
+
+    /** Whether the picture from the device is pale (measured when it was saved). */
+    boolean customWallpaperLight() {
+        return prefs.getBoolean(CUSTOM_LIGHT, false);
+    }
+
+    void setCustomWallpaperLight(boolean light) {
+        prefs.edit().putBoolean(CUSTOM_LIGHT, light).apply();
+    }
+
+    String youtubeKey() {
+        return prefs.getString(YOUTUBE_KEY, "");
+    }
+
+    void setYoutubeKey(String key) {
+        prefs.edit().putString(YOUTUBE_KEY, key == null ? "" : key.trim()).apply();
     }
 
     /** Off by default: a still wallpaper is the safe choice on a 1 GB stick. */

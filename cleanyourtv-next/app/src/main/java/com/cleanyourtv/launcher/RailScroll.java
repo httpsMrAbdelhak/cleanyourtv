@@ -9,7 +9,7 @@ import android.widget.HorizontalScrollView;
  * A horizontal strip that follows the focus with a smooth glide instead of the framework's instant jump:
  * the focused item is brought to the left third of the strip, so the next ones are always in view.
  */
-final class RailScroll extends HorizontalScrollView {
+class RailScroll extends HorizontalScrollView {
     RailScroll(Context context) {
         super(context);
         setHorizontalScrollBarEnabled(false);

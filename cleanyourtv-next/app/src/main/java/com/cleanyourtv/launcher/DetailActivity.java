@@ -23,9 +23,13 @@ import java.util.Locale;
  */
 public final class DetailActivity extends Activity {
     private static final String EXTRA = "item";
+    private static final String EXTRA_PACKAGE = "package";
+    private static final String EXTRA_LABEL = "label";
 
-    static Intent intent(Context context, MediaItem item) {
-        return new Intent(context, DetailActivity.class).putExtra(EXTRA, item);
+    /** packageName and appLabel: the streaming app the title was found for, or null. */
+    static Intent intent(Context context, MediaItem item, String packageName, String appLabel) {
+        return new Intent(context, DetailActivity.class).putExtra(EXTRA, item)
+                .putExtra(EXTRA_PACKAGE, packageName).putExtra(EXTRA_LABEL, appLabel);
     }
 
     @Override
@@ -37,6 +41,7 @@ public final class DetailActivity extends Activity {
             return;
         }
         Prefs prefs = new Prefs(this);
+        Palette.apply(prefs);
         boolean light = prefs.effects().lightImages();
         int w = getResources().getDisplayMetrics().widthPixels;
         int h = getResources().getDisplayMetrics().heightPixels;
@@ -52,11 +57,11 @@ public final class DetailActivity extends Activity {
         }
         View shade = new View(this);
         shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[] {0xFF05060A, 0xE605060A, 0x6605060A}));
+                new int[] {Palette.BACKGROUND, (Palette.BACKGROUND & 0xFFFFFF) | 0xE6000000, (Palette.BACKGROUND & 0xFFFFFF) | 0x66000000}));
         root.addView(shade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         View floor = new View(this);
         floor.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[] {0x0005060A, 0xFF05060A}));
+                new int[] {Palette.BACKGROUND & 0xFFFFFF, Palette.BACKGROUND}));
         root.addView(floor, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, h * 45 / 100, Gravity.BOTTOM));
 
         LinearLayout content = new LinearLayout(this);
@@ -96,6 +101,24 @@ public final class DetailActivity extends Activity {
         note.setText(R.string.detail_no_playback);
         note.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 20));
 
+        final String appPackage = getIntent().getStringExtra(EXTRA_PACKAGE);
+        TextView openApp = null;
+        if (appPackage != null) {
+            openApp = Ui.text(this, 20, Palette.TEXT, Ui.medium(this));
+            openApp.setText(getString(R.string.detail_open_app, getIntent().getStringExtra(EXTRA_LABEL)));
+            openApp.setGravity(Gravity.CENTER);
+            openApp.setPadding(Ui.dp(this, 34), Ui.dp(this, 14), Ui.dp(this, 34), Ui.dp(this, 14));
+            openApp.setFocusable(true);
+            openApp.setClickable(true);
+            openApp.setDefaultFocusHighlightEnabled(false);
+            openApp.setBackground(Ui.focusGlass(this, Palette.TILE, Palette.TILE_FOCUSED, Ui.dp(this, 28)));
+            openApp.setOnClickListener(v -> {
+                if (!AppRepository.launch(this, appPackage)) {
+                    android.widget.Toast.makeText(this, R.string.toast_launch_failed, android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         TextView back = Ui.text(this, 20, Palette.TEXT, Ui.medium(this));
         back.setText(R.string.action_back);
         back.setGravity(Gravity.CENTER);
@@ -103,17 +126,27 @@ public final class DetailActivity extends Activity {
         back.setFocusable(true);
         back.setClickable(true);
         back.setDefaultFocusHighlightEnabled(false);
-        back.setBackground(Ui.focusGlass(this, 0x33FFFFFF, 0x66FFFFFF, Ui.dp(this, 28)));
+        back.setBackground(Ui.focusGlass(this, Palette.TILE, Palette.TILE_FOCUSED, Ui.dp(this, 28)));
         back.setOnClickListener(v -> finish());
 
         text.addView(title);
         text.addView(metaView);
         text.addView(overview);
         text.addView(note);
-        text.addView(back, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setClipChildren(false);
+        if (openApp != null) {
+            LinearLayout.LayoutParams openParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            openParams.rightMargin = Ui.dp(this, 14);
+            buttons.addView(openApp, openParams);
+        }
+        buttons.addView(back, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        text.addView(buttons);
         content.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         root.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
-        back.requestFocus();
+        (openApp != null ? openApp : back).requestFocus();
     }
 }

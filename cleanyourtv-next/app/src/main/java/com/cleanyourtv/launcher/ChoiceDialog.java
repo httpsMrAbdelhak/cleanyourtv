@@ -22,8 +22,8 @@ final class ChoiceDialog {
         box.setOrientation(LinearLayout.VERTICAL);
         int pad = Ui.dp(activity, 26);
         box.setPadding(pad, pad, pad, pad);
-        GradientDrawable panel = Ui.round(0xF2181B22, Ui.dp(activity, 30));
-        panel.setStroke(Ui.dp(activity, 1), 0x40FFFFFF);
+        GradientDrawable panel = Ui.round(Palette.DIALOG, Ui.dp(activity, 30));
+        panel.setStroke(Ui.dp(activity, 1), 0x40808080);
         box.setBackground(panel);
         TextView heading = Ui.text(activity, 24, Palette.TEXT, Ui.medium(activity));
         heading.setText(title);

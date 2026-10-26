@@ -16,8 +16,16 @@ import android.widget.TextView;
 final class Ui {
     private Ui() { }
 
+    /**
+     * One design unit: the screen is laid out as 960 units wide whatever its density, so the interface looks
+     * the same on a TV set to 320 dpi and on one set to 213 dpi. Sizes below are in these units.
+     */
+    static float unit(Context context) {
+        return Math.max(0.5f, context.getResources().getDisplayMetrics().widthPixels / 960f);
+    }
+
     static int dp(Context context, float value) {
-        return Math.round(value * context.getResources().getDisplayMetrics().density);
+        return Math.round(value * unit(context));
     }
 
     static GradientDrawable round(int color, float radiusPx) {
@@ -49,7 +57,7 @@ final class Ui {
 
     static TextView text(Context context, float sp, int color, Typeface face) {
         TextView view = new TextView(context);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        view.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp * unit(context));
         view.setTextColor(color);
         if (face != null) view.setTypeface(face);
         view.setIncludeFontPadding(false);
@@ -62,7 +70,7 @@ final class Ui {
      */
     static StateListDrawable focusGlass(Context context, int normal, int focused, float radiusPx) {
         GradientDrawable lit = round(focused, radiusPx);
-        lit.setStroke(dp(context, 2), 0xE6FFFFFF);
+        lit.setStroke(dp(context, 2), Palette.RING);
         StateListDrawable states = new StateListDrawable();
         states.addState(new int[] {android.R.attr.state_focused}, lit);
         states.addState(new int[] {android.R.attr.state_pressed}, lit);
@@ -75,7 +83,7 @@ final class Ui {
         float stroke = dp(context, 1.5f);
         StateListDrawable states = new StateListDrawable();
         GradientDrawable ring = round(0x00000000, radiusPx);
-        ring.setStroke(dp(context, 2), 0xE6FFFFFF);
+        ring.setStroke(dp(context, 2), Palette.RING);
         states.addState(new int[] {android.R.attr.state_focused},
                 new android.graphics.drawable.LayerDrawable(new Drawable[] {
                         new GlassDrawable(radiusPx, stroke, sample, true, effects), ring}));
@@ -94,6 +102,6 @@ final class Ui {
     }
 
     static Drawable placeholder() {
-        return new ColorDrawable(0x1FFFFFFF);
+        return new ColorDrawable(Palette.PLACEHOLDER);
     }
 }

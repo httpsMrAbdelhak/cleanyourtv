@@ -86,11 +86,22 @@ public class AlgorithmsTest {
 
     // --- NavLogic ---
 
-    @Test public void backClimbsFromContentToTabsToHomeThenStops() {
-        assertEquals(NavLogic.BackAction.FOCUS_TABS, NavLogic.onBack(NavLogic.CINEMA, false));
-        assertEquals(NavLogic.BackAction.FOCUS_TABS, NavLogic.onBack(NavLogic.HOME, false));
-        assertEquals(NavLogic.BackAction.SELECT_HOME, NavLogic.onBack(NavLogic.WEATHER, true));
-        assertEquals(NavLogic.BackAction.IGNORE, NavLogic.onBack(NavLogic.HOME, true));
+    @Test public void upClimbsFromDockToContentToHeader() {
+        assertEquals(NavLogic.Zone.CONTENT, NavLogic.up(NavLogic.Zone.DOCK));
+        assertEquals(NavLogic.Zone.HEADER, NavLogic.up(NavLogic.Zone.CONTENT));
+        assertEquals(NavLogic.Zone.HEADER, NavLogic.up(NavLogic.Zone.HEADER));
+    }
+
+    @Test public void downDescendsAndStopsAtTheDock() {
+        assertEquals(NavLogic.Zone.CONTENT, NavLogic.down(NavLogic.Zone.HEADER));
+        assertEquals(NavLogic.Zone.DOCK, NavLogic.down(NavLogic.Zone.CONTENT));
+        assertEquals("no app grid below the dock", NavLogic.Zone.DOCK, NavLogic.down(NavLogic.Zone.DOCK));
+    }
+
+    @Test public void backGoesDownToTheDockThenStops() {
+        assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.HEADER));
+        assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.CONTENT));
+        assertEquals(NavLogic.BackAction.IGNORE, NavLogic.onBack(NavLogic.Zone.DOCK));
     }
 
     // --- RailWindow ---
@@ -176,5 +187,15 @@ public class AlgorithmsTest {
         assertEquals(Status.Kind.BAD_KEY, Status.parse("bad_key").kind);
         assertEquals(Status.Kind.NEVER, Status.parse("garbage").kind);
         assertEquals(0, Status.parse("ok:notanumber").time);
+    }
+
+    // --- Luma ---
+
+    @Test public void lumaTellsPaleFromDark() {
+        assertTrue(Luma.isLight(fill(100, 0xFFF0F0F0)));
+        assertFalse(Luma.isLight(fill(100, 0xFF101010)));
+        assertFalse("mid grey keeps light text", Luma.isLight(fill(100, 0xFF808080)));
+        assertEquals(0f, Luma.mean(fill(10, 0x00FFFFFF)), 0f);
+        assertEquals(255f, Luma.mean(fill(10, 0xFFFFFFFF)), 0.5f);
     }
 }

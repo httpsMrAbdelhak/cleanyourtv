@@ -14,27 +14,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Trending films and series from The Movie Database (TMDB). Needs a key: nothing is shown without one, and
- * nothing is invented. Answers are cached for six hours; when the network fails the last answer is shown
- * and marked as old. This product uses the TMDB API but is not endorsed or certified by TMDB.
+ * Films and series from The Movie Database (TMDB). Needs a key: nothing is shown without one, and nothing is
+ * invented. Answers are cached for six hours; when the network fails the last answer is shown and marked
+ * as old. For a streaming app, the list is the service's own catalogue, found by matching the app to TMDB's
+ * list of watch providers by name. This product uses the TMDB API but is not endorsed or certified by TMDB.
  */
 final class Tmdb {
     private Tmdb() { }
-
-    enum Feed {
-        TRENDING("trending/all/week", false),
-        MOVIES("movie/popular", false),
-        SERIES("tv/popular", true),
-        NEW("movie/now_playing", false);
-
-        final String path;
-        final boolean series;
-
-        Feed(String path, boolean series) {
-            this.path = path;
-            this.series = series;
-        }
-    }
 
     /** What a load produced. items is empty with error set when there is nothing to show. */
     static final class Result {
@@ -44,12 +30,15 @@ final class Tmdb {
         /** True when the network failed and the items come from an old cache. */
         final boolean stale;
         final Error error;
+        /** True when an app was asked for but TMDB has no matching service, so general lists were used. */
+        final boolean providerMissing;
 
-        Result(List<MediaItem> items, long fetchedAt, boolean stale, Error error) {
+        Result(List<MediaItem> items, long fetchedAt, boolean stale, Error error, boolean providerMissing) {
             this.items = items;
             this.fetchedAt = fetchedAt;
             this.stale = stale;
             this.error = error;
+            this.providerMissing = providerMissing;
         }
     }
 
@@ -60,6 +49,7 @@ final class Tmdb {
     }
 
     private static final String API = "https://api.themoviedb.org/3/";
+    private static final long PROVIDERS_TTL_MS = 7L * 24 * 60 * 60 * 1000;
     private static final ExecutorService POOL = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "tmdb");
         thread.setDaemon(true);
@@ -90,11 +80,11 @@ final class Tmdb {
         return "https://image.tmdb.org/t/p/w780" + path;
     }
 
-    static void load(final Context context, final Feed feed, final boolean forceNetwork, final Callback callback) {
+    static void load(final Context context, final FeedSpec spec, final boolean forceNetwork, final Callback callback) {
         final Context app = context.getApplicationContext();
         final Prefs prefs = new Prefs(app);
         POOL.execute(() -> {
-            final Result result = fetch(app, prefs, feed, forceNetwork);
+            final Result result = fetch(app, prefs, spec, forceNetwork);
             prefs.setStatus("tmdb", statusOf(result));
             MAIN.post(() -> callback.onResult(result));
         });
@@ -105,39 +95,76 @@ final class Tmdb {
         return result.error.name().toLowerCase(Locale.ROOT);
     }
 
-    private static Result fetch(Context context, Prefs prefs, Feed feed, boolean forceNetwork) {
+    private static Result fetch(Context context, Prefs prefs, FeedSpec spec, boolean forceNetwork) {
         String key = key(prefs);
-        if (key.isEmpty()) return new Result(new ArrayList<MediaItem>(), 0, false, Error.NO_KEY);
-        String cacheKey = "tmdb_" + feed.name() + "_" + language();
+        if (key.isEmpty()) return new Result(new ArrayList<MediaItem>(), 0, false, Error.NO_KEY, false);
+        String region = Region.of(Locale.getDefault());
+        String cacheKey = spec.cacheKey(language(), region);
         JsonCache.Entry cached = JsonCache.read(context, cacheKey);
         long now = System.currentTimeMillis();
         if (cached != null && !forceNetwork && CachePolicy.isFresh(now, cached.fetchedAt, CachePolicy.TMDB_TTL_MS)) {
-            List<MediaItem> items = parseOrNull(cached.body, feed);
-            if (items != null) return new Result(items, cached.fetchedAt, false, Error.NONE);
+            List<MediaItem> items = parseOrNull(cached.body, spec);
+            if (items != null) return new Result(items, cached.fetchedAt, false, Error.NONE, false);
         }
         try {
-            boolean bearer = key.startsWith("eyJ");
-            String url = API + feed.path + "?language=" + language() + (bearer ? "" : "&api_key=" + key);
-            String body = Http.text(url, bearer ? key : null);
-            List<MediaItem> items = TmdbParser.parse(body, feed.series);
-            JsonCache.write(context, cacheKey, body);
-            return new Result(items, System.currentTimeMillis(), false, Error.NONE);
-        } catch (IOException e) {
-            Error error = e.getMessage() != null && e.getMessage().startsWith("HTTP 401") ? Error.BAD_KEY
-                    : (e.getMessage() != null && e.getMessage().startsWith("HTTP") ? Error.FAILED : Error.OFFLINE);
-            if (error != Error.BAD_KEY && cached != null) {
-                List<MediaItem> items = parseOrNull(cached.body, feed);
-                if (items != null) return new Result(items, cached.fetchedAt, true, Error.NONE);
+            String extra = spec.query;
+            if (spec.providerPackage != null) {
+                int provider = providerId(context, key, spec.providerPackage, region);
+                if (provider == 0) {
+                    // TMDB has no service by that name here: say so and fall back to the general list.
+                    Result general = fetch(context, prefs, spec.series ? FeedSpec.popular(true) : FeedSpec.trending(), forceNetwork);
+                    return new Result(general.items, general.fetchedAt, general.stale, general.error, true);
+                }
+                extra += "&with_watch_providers=" + provider + "&watch_region=" + region;
             }
-            return new Result(new ArrayList<MediaItem>(), 0, false, error);
+            String body = get(key, spec.path, "&language=" + language() + extra);
+            List<MediaItem> items = TmdbParser.parse(body, spec.series);
+            JsonCache.write(context, cacheKey, body);
+            return new Result(items, System.currentTimeMillis(), false, Error.NONE, false);
+        } catch (IOException e) {
+            Error error = errorOf(e);
+            if (error != Error.BAD_KEY && cached != null) {
+                List<MediaItem> items = parseOrNull(cached.body, spec);
+                if (items != null) return new Result(items, cached.fetchedAt, true, Error.NONE, false);
+            }
+            return new Result(new ArrayList<MediaItem>(), 0, false, error, false);
         } catch (JSONException | RuntimeException e) {
-            return new Result(new ArrayList<MediaItem>(), 0, false, Error.FAILED);
+            return new Result(new ArrayList<MediaItem>(), 0, false, Error.FAILED, false);
         }
     }
 
-    private static List<MediaItem> parseOrNull(String body, Feed feed) {
+    /** The TMDB id of the streaming service behind an app, from TMDB's own provider list; 0 when none matches. */
+    private static int providerId(Context context, String key, String packageName, String region) throws IOException, JSONException {
+        String[] names = ProviderMap.namesFor(packageName);
+        if (names == null) return 0;
+        String cacheKey = "tmdb_providers_" + region;
+        JsonCache.Entry cached = JsonCache.read(context, cacheKey);
+        String body;
+        if (cached != null && CachePolicy.isFresh(System.currentTimeMillis(), cached.fetchedAt, PROVIDERS_TTL_MS)) {
+            body = cached.body;
+        } else {
+            body = get(key, "watch/providers/movie", "&language=en-US&watch_region=" + region);
+            JsonCache.write(context, cacheKey, body);
+        }
+        return ProviderParser.find(body, names);
+    }
+
+    private static String get(String key, String path, String params) throws IOException {
+        boolean bearer = key.startsWith("eyJ");
+        String url = API + path + "?" + (bearer ? "" : "api_key=" + key) + params;
+        return Http.text(url, bearer ? key : null);
+    }
+
+    static Error errorOf(IOException e) {
+        String message = e.getMessage();
+        if (message != null && message.startsWith("HTTP 401")) return Error.BAD_KEY;
+        if (message != null && message.startsWith("HTTP")) return Error.FAILED;
+        return Error.OFFLINE;
+    }
+
+    private static List<MediaItem> parseOrNull(String body, FeedSpec spec) {
         try {
-            return TmdbParser.parse(body, feed.series);
+            return TmdbParser.parse(body, spec.series);
         } catch (JSONException e) {
             return null;
         }

@@ -7,13 +7,16 @@ It lives beside the reference launcher in `launcher/`, which it does not touch.
 
 ## What it does
 
-- **Home**: a quiet clock and date on a wallpaper, a glass dock of up to six favourite apps, and a tab bar (Home, Cinema, Weather, settings) in the manner of tvOS.
-- **Ambient light**: the selected dock icon grows, and a soft light in its colour spreads along the bottom of the screen.
+- **A clean, light look**: a pale wallpaper, dark text, frosted white glass. A dark wallpaper switches the whole interface to light text on smoked glass: the theme follows the wallpaper.
+- **A dock of wide banners**: each app shows its own TV banner (Netflix, YouTube and most streaming apps ship one); an app without one gets its icon on a gradient of its own colour. The selected banner lifts, and a soft light in its colour spreads along the bottom of the screen.
+- **A panel above the dock that follows the selection**:
+  - a streaming app (Netflix, Prime Video, Disney+, Max, Apple TV, Paramount+, Canal+, Crunchyroll): that service's films and series, from TMDB. The tabs Explore, Movies and Series filter them.
+  - YouTube: the most popular videos (needs a free YouTube API key); OK opens the video in the YouTube app.
+  - the weather tile: current weather and seven days for a city you choose (no key).
+  - any other app: what is trending on TMDB.
 - **Liquid Glass**: panels show a frosted copy of the wallpaper, a pale tint and a lit edge. A Performance level replaces it with flat glass.
-- **Wallpapers**: six built-in cinematic lights, an optional slow animation, and a picture from the device. Preview before applying.
-- **Cinema**: trending films and series from TMDB, with a backdrop that follows the focus. Needs a free TMDB key.
-- **Weather**: current weather and seven days from Open-Meteo, for a city you choose. No key.
-- **App library** and **settings**, driven by the remote: Up, Down, Left, Right, OK, Back. Hold OK (or press Menu) on a dock app to move or remove it.
+- **Wallpapers**: three light and six dark built-in scenes, an optional slow animation, and a picture from the device. Preview before applying.
+- **App library** (the grid button, top right) and **settings** (the gear), driven by the remote: Up, Down, Left, Right, OK, Back. Hold OK (or press Menu) on a dock app to move or remove it.
 - **Languages**: English and French.
 
 ## What it never does
@@ -23,7 +26,7 @@ It lives beside the reference launcher in `launcher/`, which it does not touch.
 - It runs no `adb` or `pm` command, and ships no script that does.
 - It shows no data it does not have: no key, no network or no city each get a plain message.
 
-## Status of this version (0.2.0)
+## Status of this version (0.3.0)
 
 What is verified and what is not:
 
@@ -33,6 +36,7 @@ What is verified and what is not:
 | Live TMDB and Open-Meteo answers | **Not tested**: the sandbox that wrote this could not reach them |
 | Smoothness and memory on the Mi TV Stick | **Not measured**: needs the real device |
 | "Continue watching" | **Not possible** for a third-party home screen, see `docs/PLAYBACK.md` |
+| Opening a YouTube video, matching an app to its TMDB service | Written from the documented behaviour, **not tried on a TV** |
 | Home button on the Mi TV Stick | Unknown, see `docs/RECOVERY.md` |
 
 ## Next steps

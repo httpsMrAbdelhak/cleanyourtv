@@ -35,6 +35,7 @@ final class AmbientGlow extends View {
     private float toAlpha;
     private float curAlpha;
     private boolean placed;
+    private float strength = 0.85f;
 
     AmbientGlow(Context context) {
         super(context);
@@ -51,6 +52,11 @@ final class AmbientGlow extends View {
             curAlpha = fromAlpha + (toAlpha - fromAlpha) * t;
             invalidate();
         });
+    }
+
+    /** How bright the light gets at most (0..1): a pale wallpaper needs less. */
+    void setStrength(float strength) {
+        this.strength = strength;
     }
 
     /** Lights the glow under centerX (in this view's coordinates) with colour, gliding from where it was. */
@@ -86,7 +92,7 @@ final class AmbientGlow extends View {
         int width = getWidth();
         int height = getHeight();
         paint.setColorFilter(new PorterDuffColorFilter(curColor, PorterDuff.Mode.SRC_IN));
-        paint.setAlpha(Math.round(255 * curAlpha * 0.85f));
+        paint.setAlpha(Math.round(255 * curAlpha * strength));
         canvas.save();
         canvas.translate(curX, height);
         canvas.scale(width * 0.36f, height * 0.95f);
