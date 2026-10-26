@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -14,9 +16,10 @@ import android.widget.Toast;
 import java.util.List;
 
 /**
- * Every installed app, in a grid of tiles. The grid is plain rows of focusable views inside a ScrollView:
- * the framework's own D-pad focus search walks it in all four directions and scrolls to follow, with no
- * custom key handling to get wrong. OK opens an app; a long OK (or Menu) adds it to or removes it from the dock.
+ * Every installed app as a wide banner, the same look as the dock. It opens when Down is pressed on the dock.
+ * Rows of focusable banners inside a ScrollView: the framework's own D-pad focus search walks them in all four
+ * directions and scrolls to follow. OK opens an app; a long OK (or Menu) adds it to or removes it from the dock.
+ * The focused banner lifts and lights a pane of glass in its own colour behind it.
  */
 public final class LibraryActivity extends Activity {
     private Prefs prefs;
@@ -35,21 +38,21 @@ public final class LibraryActivity extends Activity {
         int margin = Ui.dp(this, 48);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(margin, margin, margin, 0);
-        page.setBackgroundColor((Palette.BACKGROUND & 0xFFFFFF) | 0x80000000);
+        page.setPadding(margin, Ui.dp(this, 36), margin, 0);
+        page.setBackgroundColor((Palette.BACKGROUND & 0xFFFFFF) | 0x66000000);
 
-        title = Ui.text(this, 36, Palette.TEXT, Ui.light(this));
+        title = Ui.text(this, 32, Palette.TEXT, Ui.light(this));
         title.setText(R.string.library_title);
         page.addView(title);
 
         ScrollView scroll = new ScrollView(this);
         scroll.setVerticalScrollBarEnabled(false);
         scroll.setClipToPadding(false);
-        scroll.setPadding(0, Ui.dp(this, 16), 0, Ui.dp(this, 32));
+        scroll.setPadding(0, Ui.dp(this, 14), 0, Ui.dp(this, 40));
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        TileView.allowOverflow(content);
-        scroll.addView(content, new ViewGroup.LayoutParams(
+        Ui.allowOverflow(content);
+        scroll.addView(content, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         page.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(page);
@@ -78,12 +81,11 @@ public final class LibraryActivity extends Activity {
             return;
         }
 
-        int cellWidth = Ui.dp(this, 148);
-        int tileHeight = Ui.dp(this, 120);
-        int tileWidth = Ui.dp(this, 132);
-        int columns = Math.max(3, (getResources().getDisplayMetrics().widthPixels - Ui.dp(this, 96)) / cellWidth);
-        int iconPx = Ui.dp(this, 60);
-        int gap = Ui.dp(this, 8);
+        int gap = Ui.dp(this, 10);
+        int columns = 5;
+        int available = getResources().getDisplayMetrics().widthPixels - Ui.dp(this, 96);
+        int width = available / columns - 2 * gap;
+        int height = width * 9 / 16;
         PackageManager pm = getPackageManager();
 
         LinearLayout row = null;
@@ -93,13 +95,14 @@ public final class LibraryActivity extends Activity {
                 row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setGravity(Gravity.START);
-                TileView.allowOverflow(row);
+                Ui.allowOverflow(row);
+                int padY = Ui.dp(this, 6);
+                row.setPadding(0, padY, 0, padY);
                 content.addView(row);
             }
             final AppEntry app = apps.get(i);
-            TileView tile = new TileView(this, tileWidth, tileHeight, iconPx);
-            tile.setLabel(app.label);
-            IconCache.get().load(pm, app.packageName, iconPx, tile.iconView());
+            BannerTile tile = new BannerTile(this, app.packageName, app.label, width, height, true);
+            IconCache.get().loadBanner(pm, app.packageName, app.label, width, height, tile.picture());
             tile.setOnClickListener(view -> {
                 if (!AppRepository.launch(this, app.packageName)) {
                     Toast.makeText(this, R.string.toast_launch_failed, Toast.LENGTH_SHORT).show();
@@ -109,7 +112,7 @@ public final class LibraryActivity extends Activity {
                 showMenu(app);
                 return true;
             });
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(tile.getLayoutParams());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
             params.setMargins(gap, gap, gap, gap);
             row.addView(tile, params);
             if (first == null) first = tile;
@@ -118,8 +121,8 @@ public final class LibraryActivity extends Activity {
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, android.view.KeyEvent event) {
-        if (keyCode == android.view.KeyEvent.KEYCODE_MENU) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
             View focused = getCurrentFocus();
             if (focused != null && focused.isLongClickable()) return focused.performLongClick();
         }

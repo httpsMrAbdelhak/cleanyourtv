@@ -27,6 +27,7 @@ final class GlassDrawable extends Drawable {
     private final boolean sample;
     private final boolean bright;
     private final boolean frosted;
+    private final boolean clear;
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint shade = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -44,13 +45,19 @@ final class GlassDrawable extends Drawable {
      * @param bright a livelier panel, for the one that has focus
      */
     GlassDrawable(float radiusPx, float strokePx, boolean sampleBackdrop, boolean bright, Effects effects) {
+        this(radiusPx, strokePx, sampleBackdrop, bright, false, effects);
+    }
+
+    /** clear: the smoked, see-through glass of the dock instead of the milky one. */
+    GlassDrawable(float radiusPx, float strokePx, boolean sampleBackdrop, boolean bright, boolean clear, Effects effects) {
+        this.clear = clear;
         this.radius = radiusPx;
         this.strokeWidth = strokePx;
         this.sample = sampleBackdrop;
         this.bright = bright;
         this.frosted = effects.frostedGlass();
-        shade.setColor(Palette.GLASS_SHADE);
-        fill.setColor(bright ? Palette.GLASS_FILL_BRIGHT : Palette.GLASS_FILL);
+        shade.setColor(clear ? Palette.CLEAR_SHADE : Palette.GLASS_SHADE);
+        fill.setColor(clear ? Palette.CLEAR_FLAT : (bright ? Palette.GLASS_FILL_BRIGHT : Palette.GLASS_FILL));
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(strokePx);
         hairline.setStyle(Paint.Style.STROKE);
@@ -60,8 +67,8 @@ final class GlassDrawable extends Drawable {
 
     @Override
     protected void onBoundsChange(Rect bounds) {
-        int top = bright ? Palette.TINT_TOP_BRIGHT : Palette.TINT_TOP;
-        int bottom = bright ? Palette.TINT_BOTTOM_BRIGHT : Palette.TINT_BOTTOM;
+        int top = clear ? Palette.CLEAR_TINT_TOP : (bright ? Palette.TINT_TOP_BRIGHT : Palette.TINT_TOP);
+        int bottom = clear ? Palette.CLEAR_TINT_BOTTOM : (bright ? Palette.TINT_BOTTOM_BRIGHT : Palette.TINT_BOTTOM);
         tint.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom, top, bottom, Shader.TileMode.CLAMP));
         int lit = bright ? Palette.EDGE_LIT_BRIGHT : Palette.EDGE_LIT;
         edge.setShader(new LinearGradient(bounds.left, bounds.top, bounds.right, bounds.bottom,

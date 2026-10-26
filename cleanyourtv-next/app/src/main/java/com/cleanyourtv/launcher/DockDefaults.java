@@ -25,9 +25,16 @@ final class DockDefaults {
     /** Up to {@link DockModel#MAX} minus one apps, so there is always a free slot to add one. */
     static List<String> pick(Set<String> installed) {
         List<String> out = new ArrayList<>();
+        // The streaming app whose content the panel shows comes first, whatever its exact package name.
+        for (String packageName : installed) {
+            if (packageName.toLowerCase(java.util.Locale.ROOT).contains("nuvio") && out.size() < DockModel.MAX - 1) {
+                out.add(packageName);
+                break;
+            }
+        }
         for (String packageName : PREFERRED) {
             if (out.size() >= DockModel.MAX - 1) break;
-            if (installed.contains(packageName)) out.add(packageName);
+            if (installed.contains(packageName) && !out.contains(packageName)) out.add(packageName);
         }
         return out;
     }

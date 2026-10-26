@@ -38,6 +38,11 @@ final class Palette {
     static int EDGE_MID;
     static int EDGE_END;
     static int HAIRLINE;
+    /** The clearer, smoked glass of the dock: the blurred wallpaper shows through, only slightly tinted. */
+    static int CLEAR_SHADE;
+    static int CLEAR_FLAT;
+    static int CLEAR_TINT_TOP;
+    static int CLEAR_TINT_BOTTOM;
 
     static {
         apply(true, 0xFF2F6BFF);
@@ -76,6 +81,10 @@ final class Palette {
             EDGE_MID = 0x40FFFFFF;
             EDGE_END = 0xB3FFFFFF;
             HAIRLINE = 0x24202C40;
+            CLEAR_SHADE = 0x4A465C80;
+            CLEAR_FLAT = 0x80566A8C;
+            CLEAR_TINT_TOP = 0x40FFFFFF;
+            CLEAR_TINT_BOTTOM = 0x0AFFFFFF;
         } else {
             BACKGROUND = 0xFF05060A;
             SURFACE = 0xFF14161C;
@@ -101,6 +110,10 @@ final class Palette {
             EDGE_MID = 0x14FFFFFF;
             EDGE_END = 0x3DFFFFFF;
             HAIRLINE = 0x00000000;
+            CLEAR_SHADE = 0x40000000;
+            CLEAR_FLAT = 0x66101520;
+            CLEAR_TINT_TOP = 0x2EFFFFFF;
+            CLEAR_TINT_BOTTOM = 0x08FFFFFF;
         }
         return changed;
     }

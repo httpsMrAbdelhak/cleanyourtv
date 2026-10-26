@@ -20,13 +20,12 @@ final class Wallpaper {
     static boolean isLight(Prefs prefs) {
         String id = prefs.wallpaperId();
         if (Wallpapers.CUSTOM.equals(id)) return prefs.customWallpaperLight();
-        WallpaperSource source = Wallpapers.byId(id);
-        return source instanceof SceneWallpaper && ((SceneWallpaper) source).light();
+        return Wallpapers.byId(id).light();
     }
 
     /** Whether the saved wallpaper may drift (a scene, not a picture) and the user allows it. */
     static boolean animated(Prefs prefs) {
         return prefs.animatedWallpaper() && prefs.effects().allowsAnimatedWallpaper()
-                && !Wallpapers.CUSTOM.equals(prefs.wallpaperId());
+                && !Wallpapers.CUSTOM.equals(prefs.wallpaperId()) && Wallpapers.byId(prefs.wallpaperId()).animatable();
     }
 }

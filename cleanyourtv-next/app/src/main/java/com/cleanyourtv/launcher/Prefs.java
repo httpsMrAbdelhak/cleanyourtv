@@ -19,9 +19,8 @@ final class Prefs {
     private static final String CITY_NAME = "city_name";
     private static final String CITY_LAT = "city_lat";
     private static final String CITY_LON = "city_lon";
-    private static final String TMDB_KEY = "tmdb_key";
+    private static final String SOURCE = "source_package";
     private static final String CUSTOM_LIGHT = "custom_light";
-    private static final String YOUTUBE_KEY = "youtube_key";
     private static final String STATUS_PREFIX = "status_";
 
     private final SharedPreferences prefs;
@@ -72,14 +71,6 @@ final class Prefs {
 
     void setCustomWallpaperLight(boolean light) {
         prefs.edit().putBoolean(CUSTOM_LIGHT, light).apply();
-    }
-
-    String youtubeKey() {
-        return prefs.getString(YOUTUBE_KEY, "");
-    }
-
-    void setYoutubeKey(String key) {
-        prefs.edit().putString(YOUTUBE_KEY, key == null ? "" : key.trim()).apply();
     }
 
     /** Off by default: a still wallpaper is the safe choice on a 1 GB stick. */
@@ -147,13 +138,13 @@ final class Prefs {
                 .putLong(CITY_LON, Double.doubleToLongBits(longitude)).apply();
     }
 
-    /** A TMDB key typed in the settings. A key built into the APK (see Tmdb.key) is used when this is empty. */
-    String tmdbKey() {
-        return prefs.getString(TMDB_KEY, "");
+    /** The app whose home-screen content the panel shows; empty means "find Nuvio". */
+    String sourcePackage() {
+        return prefs.getString(SOURCE, "");
     }
 
-    void setTmdbKey(String key) {
-        prefs.edit().putString(TMDB_KEY, key == null ? "" : key.trim()).apply();
+    void setSourcePackage(String packageName) {
+        prefs.edit().putString(SOURCE, packageName == null ? "" : packageName).apply();
     }
 
     /** The last outcome of an integration ("tmdb", "weather"), shown on the settings screen. */

@@ -1,5 +1,6 @@
 package com.cleanyourtv.launcher;
 
+import static com.cleanyourtv.launcher.LandscapeSpec.Range;
 import static com.cleanyourtv.launcher.SceneSpec.Blob;
 
 /** The registry of built-in wallpapers, plus the picture the user chose from the device. */
@@ -21,6 +22,33 @@ final class Wallpapers {
                     new Blob(0.25f, 0.80f, 0.60f, 0.60f, 0xFFFFC9A8, 0.06f, 0.03f, 1, 1, 0.20f),
                     new Blob(0.80f, 0.30f, 0.50f, 0.80f, 0xFFD9C8FF, 0.05f, 0.04f, 1, 2, 0.55f),
                     new Blob(0.55f, 0.00f, 0.50f, 0.45f, 0xFFFFE3A8, 0.07f, 0.02f, 2, 1, 0.85f))),
+            new LandscapeWallpaper("sunset", R.string.wallpaper_sunset, new LandscapeSpec(false,
+                    new int[] {0xFF2B1B54, 0xFF6E3A92, 0xFFE0607C, 0xFFFF9A5C, 0xFFFFD08A},
+                    new float[] {0f, 0.35f, 0.62f, 0.84f, 1f},
+                    0.68f, 0.63f, 0.045f, 0xFFFFF0C8, 0xFFFFB066, 0xFFFFC27A,
+                    new Range[] {new Range(0.72f, 0.07f, 3, 0xFF8A4A86), new Range(0.80f, 0.09f, 7, 0xFF4E2A5E),
+                            new Range(0.92f, 0.08f, 11, 0xFF221036)},
+                    0f, false, new float[][] {{0.25f, 0.30f, 0.35f, 0.06f}, {0.70f, 0.42f, 0.40f, 0.05f}, {0.45f, 0.52f, 0.30f, 0.04f}}, 0xFFFF8FA0)),
+            new LandscapeWallpaper("mauve", R.string.wallpaper_mauve, new LandscapeSpec(true,
+                    new int[] {0xFFB7A3E8, 0xFFD6B2E6, 0xFFF6C4D2, 0xFFFFE2C2},
+                    new float[] {0f, 0.4f, 0.75f, 1f},
+                    0.30f, 0.70f, 0.05f, 0xFFFFF6DC, 0xFFFFD2AA, 0xFFFFE2D2,
+                    new Range[] {new Range(0.74f, 0.07f, 5, 0xFFCDB8E6), new Range(0.82f, 0.08f, 9, 0xFFB195D2),
+                            new Range(0.93f, 0.07f, 2, 0xFF8C71B8)},
+                    0f, false, new float[][] {{0.60f, 0.28f, 0.40f, 0.05f}, {0.20f, 0.40f, 0.30f, 0.04f}}, 0xFFFFF0F4)),
+            new LandscapeWallpaper("lake", R.string.wallpaper_lake, new LandscapeSpec(false,
+                    new int[] {0xFF0E1236, 0xFF3B2A6B, 0xFFB4527E, 0xFFFFA06B},
+                    new float[] {0f, 0.42f, 0.7f, 0.86f},
+                    0.50f, 0.64f, 0.035f, 0xFFFFE9C0, 0xFFFF9C6A, 0xFFFFA97A,
+                    new Range[] {new Range(0.70f, 0.07f, 13, 0xFF4A3470), new Range(0.75f, 0.06f, 4, 0xFF1D1234)},
+                    0.74f, true, new float[][] {{0.30f, 0.50f, 0.35f, 0.05f}}, 0xFFFFA0A8)),
+            new LandscapeWallpaper("mist", R.string.wallpaper_mist, new LandscapeSpec(false,
+                    new int[] {0xFF27406E, 0xFF6C8DB8, 0xFFC9D3E4, 0xFFF2E3D0},
+                    new float[] {0f, 0.5f, 0.8f, 1f},
+                    0.76f, 0.56f, 0.04f, 0xFFFFF4DC, 0xFFFFDCAC, 0xFFEFE2D6,
+                    new Range[] {new Range(0.62f, 0.07f, 21, 0xFFB9C6DA), new Range(0.72f, 0.08f, 6, 0xFF8EA3C2),
+                            new Range(0.82f, 0.09f, 15, 0xFF5F7799), new Range(0.94f, 0.08f, 8, 0xFF33496C)},
+                    0f, false, new float[][] {{0.30f, 0.34f, 0.40f, 0.04f}}, 0xFFFFFFFF)),
             new SceneWallpaper("nebula", R.string.wallpaper_nebula, new SceneSpec(false, 0xFF07060F, 0xFF0B0A1C,
                     new Blob(0.22f, 0.30f, 0.62f, 0.80f, 0xFF6A3DF0, 0.06f, 0.03f, 1, 1, 0.00f),
                     new Blob(0.82f, 0.18f, 0.46f, 0.75f, 0xFFC13CA8, 0.05f, 0.04f, 1, 2, 0.30f),

@@ -10,15 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The row of cards above the dock: a wide card and posters for films and series, or video thumbnails. It
- * glides to follow the focus, loads pictures only near the focus (RailWindow) and frees the others. Left and
- * Right stop at the ends; Up and Down are handed to the screen, which knows what lies above and below.
+ * The row of cards above the dock. It glides to follow the focus, loads pictures only near the focus
+ * (RailWindow) and frees the others. Left and Right stop at the ends; Up and Down are handed to the screen,
+ * which knows what lies above and below.
  */
 final class CardRail extends RailScroll {
     interface Listener {
-        void onOpen(ContentCard card);
+        void onOpen(TvEntry entry);
 
-        /** Up was pressed on a card. Return true when handled. */
+        /** The focus reached an entry: the heading above the rail follows its section. */
+        void onFocused(TvEntry entry);
+
         boolean onUp();
 
         boolean onDown();
@@ -48,36 +50,38 @@ final class CardRail extends RailScroll {
     /** Dim empty cards while the answer is on its way: the row never flashes white or collapses. */
     void showLoading() {
         clear();
-        int w = Ui.dp(getContext(), 320);
-        int h = Ui.dp(getContext(), 180);
+        int w = Ui.dp(getContext(), 288);
+        int h = Ui.dp(getContext(), 162);
         for (int i = 0; i < 4; i++) {
             View card = new View(getContext());
             card.setBackground(Ui.round(Palette.PLACEHOLDER, Ui.dp(getContext(), 16)));
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(i == 0 ? w : w * 4 / 10, h);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(w, h);
             params.setMargins(0, 0, Ui.dp(getContext(), GAP), 0);
             strip.addView(card, params);
         }
     }
 
-    void setCards(List<ContentCard> items) {
+    void setEntries(List<TvEntry> items) {
         boolean hadFocus = hasFocus();
         clear();
         Context context = getContext();
         for (int i = 0; i < items.size(); i++) {
             final int index = i;
-            ContentCard card = items.get(i);
+            TvEntry entry = items.get(i);
             int w;
             int h;
-            switch (card.shape) {
-                case WIDE: w = Ui.dp(context, 320); h = Ui.dp(context, 180); break;
-                case VIDEO: w = Ui.dp(context, 288); h = Ui.dp(context, 162); break;
-                default: w = Ui.dp(context, 120); h = Ui.dp(context, 180); break;
+            if (entry.shape == TvEntry.Shape.LANDSCAPE) {
+                w = Ui.dp(context, 288);
+                h = Ui.dp(context, 162);
+            } else {
+                w = Ui.dp(context, 120);
+                h = Ui.dp(context, 180);
             }
-            CardView view = new CardView(context, card, w, h);
+            CardView view = new CardView(context, entry, w, h);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     w, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
             params.setMargins(0, 0, Ui.dp(context, GAP), 0);
-            view.setOnClickListener(v -> listener.onOpen(card));
+            view.setOnClickListener(v -> listener.onOpen(entry));
             final View.OnFocusChangeListener grow = view.getOnFocusChangeListener();
             view.setOnFocusChangeListener((v, hasFocus) -> {
                 grow.onFocusChange(v, hasFocus);
@@ -85,6 +89,7 @@ final class CardRail extends RailScroll {
                 focus = index;
                 reveal(v);
                 refreshImages();
+                listener.onFocused(entry);
             });
             view.setOnKeyListener((v, keyCode, event) -> {
                 if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
@@ -119,9 +124,10 @@ final class CardRail extends RailScroll {
         for (int i = 0; i < cards.size(); i++) {
             CardView view = cards.get(i);
             if (RailWindow.shouldLoad(i, focus)) {
-                if (view.picture().getDrawable() == null && view.picture().getTag() == null) {
-                    int width = view.card.shape == ContentCard.Shape.POSTER ? 342 : 780;
-                    loader.load(view.card.imageUrl, view.picture(), light ? width / 2 : width, light, true);
+                String uri = view.entry.imageUri;
+                if (!uri.isEmpty() && view.picture().getDrawable() == null && view.picture().getTag() == null) {
+                    int width = view.entry.shape == TvEntry.Shape.POSTER ? 342 : 780;
+                    loader.load(uri, view.picture(), light ? width / 2 : width, light, true);
                 }
             } else if (RailWindow.shouldRelease(i, focus)) {
                 loader.release(view.picture());

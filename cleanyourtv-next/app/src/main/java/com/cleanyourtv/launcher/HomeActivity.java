@@ -16,6 +16,7 @@ import android.widget.Toast;
  */
 public final class HomeActivity extends Activity implements HomeScreen.Host, WallpaperView.SlowListener {
     private static final int GREETING_REFRESH_MS = 60_000;
+    private static final int REQUEST_TV = 7;
 
     private Prefs prefs;
     private FrameLayout root;
@@ -129,9 +130,20 @@ public final class HomeActivity extends Activity implements HomeScreen.Host, Wal
         startActivity(new Intent(this, LibraryActivity.class));
     }
 
+    /** Asks for the permission to read what the streaming app publishes for the TV home screen. */
     @Override
-    public void openDetail(MediaItem item, String packageName, String appLabel) {
-        startActivity(DetailActivity.intent(this, item, packageName, appLabel));
+    public void requestTvPermission() {
+        if (TvChannels.permissionGranted(this)) {
+            screen.onPermissionResult();
+            return;
+        }
+        requestPermissions(new String[] {TvChannels.PERMISSION}, REQUEST_TV);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == REQUEST_TV) screen.onPermissionResult();
     }
 
     @Override

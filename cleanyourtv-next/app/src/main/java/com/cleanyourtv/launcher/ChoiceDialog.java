@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /** A dark glass list of choices, driven by the D-pad. Back closes it; OK picks the focused line. */
@@ -64,8 +65,26 @@ final class ChoiceDialog {
         dialog.dismiss();
     }
 
+    /** A scroll view that never grows past a share of the screen, so a long list (every installed app) scrolls. */
+    private static final class CappedScroll extends ScrollView {
+        private final int maxPx;
+
+        CappedScroll(Activity activity, int maxPx) {
+            super(activity);
+            this.maxPx = maxPx;
+            setVerticalScrollBarEnabled(false);
+        }
+
+        @Override
+        protected void onMeasure(int widthSpec, int heightSpec) {
+            super.onMeasure(widthSpec, View.MeasureSpec.makeMeasureSpec(maxPx, View.MeasureSpec.AT_MOST));
+        }
+    }
+
     void show() {
-        dialog.setContentView(box, new ViewGroup.LayoutParams(Ui.dp(activity, 560), ViewGroup.LayoutParams.WRAP_CONTENT));
+        CappedScroll scroll = new CappedScroll(activity, activity.getResources().getDisplayMetrics().heightPixels * 82 / 100);
+        scroll.addView(box);
+        dialog.setContentView(scroll, new ViewGroup.LayoutParams(Ui.dp(activity, 560), ViewGroup.LayoutParams.WRAP_CONTENT));
         dialog.show();
         for (int i = 0; i < box.getChildCount(); i++) {
             if (box.getChildAt(i).isFocusable()) {

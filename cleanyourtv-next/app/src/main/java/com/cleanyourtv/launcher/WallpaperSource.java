@@ -14,6 +14,9 @@ interface WallpaperSource {
     /** String resource shown in the gallery. */
     int label();
 
+    /** True when the wallpaper is pale: the interface then uses dark text on light glass. */
+    boolean light();
+
     /** True when the drawable is a SceneDrawable that can drift (the animated wallpaper option). */
     boolean animatable();
 

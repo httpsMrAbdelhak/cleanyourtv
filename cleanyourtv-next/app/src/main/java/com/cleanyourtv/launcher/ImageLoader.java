@@ -10,7 +10,9 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +36,7 @@ final class ImageLoader {
         return instance;
     }
 
+    private final Context context;
     private final File dir;
     private final LruCache<String, Bitmap> memory = new LruCache<String, Bitmap>(MEMORY_BYTES) {
         @Override protected int sizeOf(String key, Bitmap value) {
@@ -50,6 +53,7 @@ final class ImageLoader {
     private final AtomicInteger writes = new AtomicInteger();
 
     private ImageLoader(Context context) {
+        this.context = context;
         dir = new File(context.getCacheDir(), "img");
         //noinspection ResultOfMethodCallIgnored
         dir.mkdirs();
@@ -97,7 +101,7 @@ final class ImageLoader {
         File file = new File(dir, hash(url));
         if (!file.isFile()) {
             try {
-                byte[] data = Http.image(url);
+                byte[] data = fetch(url);
                 File tmp = new File(dir, file.getName() + ".tmp");
                 try (FileOutputStream out = new FileOutputStream(tmp)) {
                     out.write(data);
@@ -128,6 +132,30 @@ final class ImageLoader {
             memory.evictAll();
             return null;
         }
+    }
+
+    /**
+     * The picture's bytes: an https address is downloaded; a content:// address (what an app publishes to the
+     * TV provider) is read from its own provider. Anything else is refused: no file:// and no plain http.
+     */
+    private byte[] fetch(String uri) throws IOException {
+        if (uri.startsWith("https://")) return Http.image(uri);
+        if (uri.startsWith("content://") || uri.startsWith("android.resource://")) {
+            try (InputStream in = context.getContentResolver().openInputStream(android.net.Uri.parse(uri))) {
+                if (in == null) throw new IOException("cannot open");
+                ByteArrayOutputStream out = new ByteArrayOutputStream(32 * 1024);
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                    if (out.size() > 4 * 1024 * 1024) throw new IOException("picture too large");
+                }
+                return out.toByteArray();
+            } catch (SecurityException e) {
+                throw new IOException("not allowed");
+            }
+        }
+        throw new IOException("unsupported address");
     }
 
     /** Deletes the least recently used files until the folder is under its cap. */

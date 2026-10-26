@@ -45,15 +45,15 @@ public class ManifestPolicyTest {
         return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
     }
 
-    @Test public void asksForInternetAndNothingElse() throws Exception {
+    @Test public void asksForTheNetworkAndTheTvListingsAndNothingElse() throws Exception {
         Document doc = manifest();
         NodeList permissions = doc.getElementsByTagName("uses-permission");
         Set<String> asked = new HashSet<>();
         for (int i = 0; i < permissions.getLength(); i++) {
             asked.add(((Element) permissions.item(i)).getAttributeNS(ANDROID, "name"));
         }
-        assertEquals("only the network, for TMDB and the weather",
-                java.util.Collections.singleton("android.permission.INTERNET"), asked);
+        assertEquals("the network (weather, pictures) and reading the streaming app's TV home content",
+                new HashSet<>(java.util.Arrays.asList("android.permission.INTERNET", "android.permission.READ_TV_LISTINGS")), asked);
         for (String tag : new String[] {"uses-permission-sdk-23", "permission"}) {
             assertEquals(tag, 0, doc.getElementsByTagName(tag).getLength());
         }
@@ -83,8 +83,13 @@ public class ManifestPolicyTest {
     @Test public void declaresNoServiceReceiverOrProvider() throws Exception {
         Document doc = manifest();
         for (String tag : new String[] {"service", "receiver", "provider"}) {
-            assertEquals(tag + " is not needed: no accessibility, boot or notification hooks",
-                    0, doc.getElementsByTagName(tag).getLength());
+            int declared = 0;
+            NodeList found = doc.getElementsByTagName(tag);
+            for (int i = 0; i < found.getLength(); i++) {
+                // A <provider> inside <queries> only makes the TV's provider visible: it declares nothing.
+                if (!"queries".equals(found.item(i).getParentNode().getNodeName())) declared++;
+            }
+            assertEquals(tag + " is not needed: no accessibility, boot or notification hooks", 0, declared);
         }
         // Comments may name what is absent; only the markup counts.
         String raw = text(new File(module(), "src/main/AndroidManifest.xml")).replaceAll("(?s)<!--.*?-->", "");
@@ -92,6 +97,8 @@ public class ManifestPolicyTest {
         assertFalse(raw.contains("WRITE_SECURE_SETTINGS"));
         assertFalse(raw.contains("QUERY_ALL_PACKAGES"));
         assertFalse(raw.contains("READ_EPG_DATA"));
+        assertFalse(raw.contains("ACCESS_ALL_EPG_DATA"));
+        assertFalse(raw.contains("BIND_NOTIFICATION_LISTENER"));
         assertFalse(raw.contains("READ_EXTERNAL_STORAGE"));
         assertFalse(raw.contains("ACCESS_FINE_LOCATION"));
     }
@@ -128,7 +135,7 @@ public class ManifestPolicyTest {
         // WallpaperActivity and DetailActivity are internal screens too, and must be declared.
         String raw = text(new File(module(), "src/main/AndroidManifest.xml"));
         assertTrue(raw.contains(".WallpaperActivity"));
-        assertTrue(raw.contains(".DetailActivity"));
+        assertFalse("the TMDB detail screen is gone", raw.contains(".DetailActivity"));
     }
 
     @Test public void tvIsDeclaredWithoutRequiringATouchscreen() throws Exception {

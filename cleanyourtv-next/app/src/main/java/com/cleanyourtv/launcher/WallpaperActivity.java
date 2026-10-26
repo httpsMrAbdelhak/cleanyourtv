@@ -67,7 +67,7 @@ public final class WallpaperActivity extends Activity {
         scroll.setPadding(0, Ui.dp(this, 16), 0, Ui.dp(this, 32));
         grid = new LinearLayout(this);
         grid.setOrientation(LinearLayout.VERTICAL);
-        TileView.allowOverflow(grid);
+        Ui.allowOverflow(grid);
         scroll.addView(grid, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         page.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
@@ -91,7 +91,7 @@ public final class WallpaperActivity extends Activity {
             if (i % COLUMNS == 0) {
                 row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
-                TileView.allowOverflow(row);
+                Ui.allowOverflow(row);
                 grid.addView(row);
             }
             final boolean custom = i == Wallpapers.ALL.length;
@@ -170,7 +170,7 @@ public final class WallpaperActivity extends Activity {
         Drawable background = null;
         if (source != null) {
             background = source.load(this);
-            light = source instanceof SceneWallpaper && ((SceneWallpaper) source).light();
+            light = source.light();
         } else if (WallpaperStore.exists(this)) {
             background = WallpaperStore.load(this, prefs.effects().lightImages());
             light = prefs.customWallpaperLight();

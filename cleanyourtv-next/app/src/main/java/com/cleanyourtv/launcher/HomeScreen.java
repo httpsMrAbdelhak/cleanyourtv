@@ -2,7 +2,6 @@ package com.cleanyourtv.launcher;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.format.DateFormat;
@@ -26,10 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The whole home screen, in three zones like tvOS: a header (greeting, three tabs, clock and two buttons), a
- * content panel that changes with the dock selection, and a glass dock of wide app banners at the bottom
- * with a light under the selected one. The dock holds the focus at start. Up climbs to the panel, then the
- * header; Down comes back to the dock; Back does the same; on the dock Back does nothing.
+ * The whole home screen, in three zones like tvOS: a header (greeting, three tabs, clock and the settings
+ * button), a content panel, and a smoked-glass dock of wide app banners at the bottom. A pane of glass slides
+ * behind the selected banner and takes its colour, and a soft light of the same colour spreads under the dock.
+ * The dock holds the focus at start. Up climbs to the panel, then the header; Down on the dock opens the list
+ * of all apps, as wide banners; Back from the panel or the header returns to the dock.
  */
 final class HomeScreen extends FrameLayout implements ContentPanel.Host {
     /** What the screen asks of the activity that hosts it. */
@@ -38,7 +38,7 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
 
         void openLibrary();
 
-        void openDetail(MediaItem item, String packageName, String appLabel);
+        void requestTvPermission();
     }
 
     private static final long SELECT_DELAY_MS = 220;
@@ -47,11 +47,13 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
     private final Prefs prefs;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final AmbientGlow glow;
+    private final GlassSelector selector;
     private final TextView title;
     private final TextClock clock;
     private final TextClock date;
     private final TextView[] tabs = new TextView[3];
-    private final View[] buttons = new View[2];
+    private final View settingsButton;
+    private final FrameLayout dockFrame;
     private final LinearLayout dock;
     private final ContentPanel panel;
     private final Map<String, String> labels = new HashMap<>();
@@ -68,7 +70,7 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
 
     private BannerTile pendingTile;
     private int pendingTab;
-    private int selectedTab = ContentPanel.TAB_EXPLORE;
+    private int selectedTab = EntryFilter.EXPLORE;
     private int lastDockIndex;
     private String renderedDock = "";
     private boolean loadedApps;
@@ -148,13 +150,8 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         whenParams.rightMargin = Ui.dp(context, 18);
         right.addView(when, whenParams);
-        buttons[0] = roundButton(context, Glyphs.apps(Palette.TEXT), () -> host.openLibrary());
-        buttons[1] = roundButton(context, Glyphs.settings(Palette.TEXT), () -> host.openSettings());
-        for (View button : buttons) {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Ui.dp(context, 42), Ui.dp(context, 42));
-            params.leftMargin = Ui.dp(context, 10);
-            right.addView(button, params);
-        }
+        settingsButton = roundButton(context, Glyphs.settings(Palette.TEXT), () -> host.openSettings());
+        right.addView(settingsButton, new LinearLayout.LayoutParams(Ui.dp(context, 42), Ui.dp(context, 42)));
         LayoutParams rightParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
         rightParams.setMargins(0, Ui.dp(context, 32), side, 0);
@@ -164,22 +161,28 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         panel = new ContentPanel(context, this, prefs);
         LayoutParams panelParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 Ui.dp(context, 284), Gravity.TOP | Gravity.START);
-        panelParams.setMargins(side - Ui.dp(context, 6), Ui.dp(context, 124), 0, 0);
+        panelParams.setMargins(side - Ui.dp(context, 6), Ui.dp(context, 120), 0, 0);
         addView(panel, panelParams);
 
-        // --- dock ---
+        // --- dock: smoked glass, a sliding pane behind the banners, the banners on top ---
+        dockFrame = new FrameLayout(context);
+        dockFrame.setClipChildren(false);
+        dockFrame.setClipToPadding(false);
+        int pad = Ui.dp(context, 14);
+        dockFrame.setPadding(pad, pad, pad, pad);
+        dockFrame.setBackground(new GlassDrawable(Ui.dp(context, 30), Ui.dp(context, 1.5f), true, false, true, prefs.effects()));
+        selector = new GlassSelector(context);
+        dockFrame.addView(selector, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         dock = new LinearLayout(context);
         dock.setOrientation(LinearLayout.HORIZONTAL);
         dock.setGravity(Gravity.CENTER);
         dock.setClipChildren(false);
         dock.setClipToPadding(false);
-        int pad = Ui.dp(context, 14);
-        dock.setPadding(pad, pad, pad, pad);
-        dock.setBackground(new GlassDrawable(Ui.dp(context, 30), Ui.dp(context, 1.5f), true, false, prefs.effects()));
+        dockFrame.addView(dock, new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         LayoutParams dockParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         dockParams.bottomMargin = Ui.dp(context, 26);
-        addView(dock, dockParams);
+        addView(dockFrame, dockParams);
 
         updateTabStyles();
     }
@@ -234,6 +237,11 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
 
     void onLookChanged() {
         panel.onLookChanged();
+    }
+
+    /** The permission question was answered: the panel looks again. */
+    void onPermissionResult() {
+        panel.onPermissionResult();
     }
 
     /** The Home key again, or a return from an app: back to the dock. */
@@ -310,6 +318,8 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         labels.clear();
         for (AppEntry app : apps) labels.put(app.packageName, app.label);
         if (!prefs.dockConfigured()) prefs.saveDock(DockDefaults.pick(new HashSet<>(labels.keySet())));
+        String source = SourceApp.resolve(prefs.sourcePackage(), apps);
+        panel.setSource(source, source == null ? "" : labels.get(source));
         loadedApps = true;
         rebuildDock(-1);
         if (findFocus() == null) focusDock();
@@ -326,17 +336,18 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         View focused = dock.getFocusedChild();
         int focusIndex = focusOverride >= 0 ? focusOverride : (focused == null ? -1 : dock.indexOfChild(focused));
         dock.removeAllViews();
+        selector.hide();
 
         Context context = getContext();
         int count = shown.size() + 1;
-        int gap = Ui.dp(context, 7);
+        int gap = Ui.dp(context, 8);
         int available = getResources().getDisplayMetrics().widthPixels - Ui.dp(context, 2 * 40 + 2 * 14);
         int width = Math.min(Ui.dp(context, 128), available / count - 2 * gap);
         int height = width * 9 / 16;
         PackageManager pm = context.getPackageManager();
 
         for (final String packageName : shown) {
-            BannerTile tile = new BannerTile(context, packageName, labels.get(packageName), width, height);
+            BannerTile tile = new BannerTile(context, packageName, labels.get(packageName), width, height, false);
             IconCache.get().loadBanner(pm, packageName, labels.get(packageName), width, height, tile.picture());
             tile.setOnClickListener(view -> open(packageName));
             tile.setOnLongClickListener(view -> {
@@ -346,7 +357,7 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
             addTile(tile, gap);
         }
 
-        BannerTile weatherTile = new BannerTile(context, null, context.getString(R.string.tab_weather), width, height);
+        BannerTile weatherTile = new BannerTile(context, null, context.getString(R.string.tab_weather), width, height, false);
         weatherTile.picture().setImageBitmap(WeatherTileArt.render(context, width, height, forecast,
                 context.getString(R.string.tab_weather)));
         weatherTile.setOnClickListener(view -> {
@@ -368,6 +379,8 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
                     if (!panel.enter()) focusHeader();
                     return true;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
+                    // Down from the dock opens the list of all apps, as wide banners.
+                    host.openLibrary();
                     return true;
                 case KeyEvent.KEYCODE_DPAD_LEFT:
                     return at == 0;
@@ -388,33 +401,39 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
                 handler.postDelayed(applySelection, SELECT_DELAY_MS);
             } else if (!isInDock(findFocus())) {
                 glow.fadeOut();
+                selector.hide();
             }
         });
         dock.addView(tile, params);
     }
 
-    /** The light under the dock takes the colour of the selected app. */
-    private void lightUnder(BannerTile tile) {
-        int[] where = new int[2];
-        tile.getLocationInWindow(where);
+    /** The glass pane slides under the selected banner and the light under the dock takes its colour. */
+    private void lightUnder(final BannerTile tile) {
+        if (tile.getWidth() == 0) {
+            // Not laid out yet (first focus): try again once it is.
+            tile.post(() -> {
+                if (tile.hasFocus()) lightUnder(tile);
+            });
+            return;
+        }
         int color = tile.packageName == null ? 0 : IconCache.get().colorOf(tile.packageName, 0);
         if (color == 0) color = prefs.accent().color;
+        int[] where = new int[2];
+        tile.getLocationInWindow(where);
         glow.aim(where[0] + tile.getWidth() / 2f, color);
+        // The pane is a little bigger than the banner, which lifts above it.
+        float growX = Ui.dp(getContext(), 13);
+        float growY = Ui.dp(getContext(), 10);
+        // The selector fills the dock frame inside its padding, so its origin is not the frame's.
+        float left = dock.getLeft() - selector.getLeft() + tile.getLeft() - growX;
+        float top = dock.getTop() - selector.getTop() + tile.getTop() - growY;
+        selector.moveTo(left, top, left + tile.getWidth() + 2 * growX, top + tile.getHeight() + 2 * growY, color);
     }
 
     /** Tells the panel what the dock selection is, once the focus has rested on it for a moment. */
     private void select(BannerTile tile) {
-        ContentPanel.Selection selection;
-        if (tile.packageName == null) {
-            selection = new ContentPanel.Selection(ContentPanel.Selection.Kind.WEATHER, null, tile.label);
-        } else if (ProviderMap.isYouTube(tile.packageName)) {
-            selection = new ContentPanel.Selection(ContentPanel.Selection.Kind.YOUTUBE, tile.packageName, tile.label);
-        } else if (ProviderMap.namesFor(tile.packageName) != null) {
-            selection = new ContentPanel.Selection(ContentPanel.Selection.Kind.STREAMING, tile.packageName, tile.label);
-        } else {
-            selection = new ContentPanel.Selection(ContentPanel.Selection.Kind.GENERAL, tile.packageName, tile.label);
-        }
-        panel.select(selection);
+        panel.select(new ContentPanel.Selection(tile.packageName == null
+                ? ContentPanel.Selection.Kind.WEATHER : ContentPanel.Selection.Kind.SOURCE));
         updateTabStyles();
     }
 
@@ -464,16 +483,14 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         for (TextView tab : tabs) {
             if (tab == view) return NavLogic.Zone.HEADER;
         }
-        for (View button : buttons) {
-            if (button == view) return NavLogic.Zone.HEADER;
-        }
+        if (view == settingsButton) return NavLogic.Zone.HEADER;
         return NavLogic.Zone.CONTENT;
     }
 
     @Override
     public void focusHeader() {
         if (panel.usesTabs()) tabs[selectedTab].requestFocus();
-        else buttons[0].requestFocus();
+        else settingsButton.requestFocus();
     }
 
     @Override
@@ -489,7 +506,7 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
     }
 
     @Override
-    public void openDetail(MediaItem item, String packageName, String appLabel) {
-        host.openDetail(item, packageName, appLabel);
+    public void requestTvPermission() {
+        host.requestTvPermission();
     }
 }

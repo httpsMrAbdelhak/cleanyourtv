@@ -7,9 +7,6 @@ plugins {
 // Nothing secret is ever read from, or written to, the repository.
 def secret = { String name -> providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull }
 def keystorePath = secret('CYTV_KEYSTORE')
-// Optional TMDB key baked into the APK (see docs/CINEMA-WEATHER.md). Empty by default: the key is then typed in
-// the settings. Anything but letters, digits, dot, dash and underscore is dropped so it cannot break the string.
-def tmdbKey = (secret('TMDB_API_KEY') ?: '').replaceAll('[^A-Za-z0-9._-]', '')
 
 android {
     namespace 'com.cleanyourtv.launcher'
@@ -20,9 +17,8 @@ android {
         // Android 8.0. The target is Android TV 9 (API 28); 26 keeps adaptive icons without a fallback.
         minSdk 26
         targetSdk 34
-        versionCode 3
-        versionName '0.3.0'
-        buildConfigField 'String', 'TMDB_KEY', "\"${tmdbKey}\""
+        versionCode 4
+        versionName '0.4.0'
         // English and French only: other locales' strings from the SDK are dropped from the APK.
         resourceConfigurations += ['en', 'fr']
     }
@@ -52,10 +48,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-
-    buildFeatures {
-        buildConfig true
     }
 
     testOptions {

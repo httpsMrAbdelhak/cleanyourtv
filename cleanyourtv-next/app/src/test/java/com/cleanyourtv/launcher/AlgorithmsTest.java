@@ -137,8 +137,8 @@ public class AlgorithmsTest {
         long now = 1_000_000_000L;
         assertTrue(CachePolicy.isFresh(now, now - 1000, CachePolicy.WEATHER_TTL_MS));
         assertFalse(CachePolicy.isFresh(now, now - CachePolicy.WEATHER_TTL_MS - 1, CachePolicy.WEATHER_TTL_MS));
-        assertFalse("never fetched", CachePolicy.isFresh(now, 0, CachePolicy.TMDB_TTL_MS));
-        assertFalse("clock went backwards", CachePolicy.isFresh(now, now + 5000, CachePolicy.TMDB_TTL_MS));
+        assertFalse("never fetched", CachePolicy.isFresh(now, 0, CachePolicy.WEATHER_TTL_MS));
+        assertFalse("clock went backwards", CachePolicy.isFresh(now, now + 5000, CachePolicy.WEATHER_TTL_MS));
     }
 
     // --- SceneMath ---
@@ -183,8 +183,9 @@ public class AlgorithmsTest {
         assertEquals(1700000000000L, Status.parse("ok:1700000000000").time);
         assertEquals(Status.Kind.STALE, Status.parse("stale:5").kind);
         assertEquals(Status.Kind.OFFLINE, Status.parse("offline").kind);
-        assertEquals(Status.Kind.NO_KEY, Status.parse("no_key").kind);
-        assertEquals(Status.Kind.BAD_KEY, Status.parse("bad_key").kind);
+        assertEquals(Status.Kind.NO_PERMISSION, Status.parse("no_permission").kind);
+        assertEquals(Status.Kind.NOTHING, Status.parse("nothing").kind);
+        assertEquals(Status.Kind.NO_SOURCE, Status.parse("no_source").kind);
         assertEquals(Status.Kind.NEVER, Status.parse("garbage").kind);
         assertEquals(0, Status.parse("ok:notanumber").time);
     }

@@ -61,7 +61,7 @@ public final class SettingsActivity extends Activity {
         scroll.setPadding(0, Ui.dp(this, 12), 0, Ui.dp(this, 40));
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.VERTICAL);
-        TileView.allowOverflow(rows);
+        Ui.allowOverflow(rows);
         scroll.addView(rows, new FrameLayout.LayoutParams(
                 Ui.dp(this, 820), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
         page.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
@@ -156,22 +156,23 @@ public final class SettingsActivity extends Activity {
                 () -> prefs.hasCity() ? prefs.cityName() : getString(R.string.settings_none), null);
         cityRow.setOnClickListener(v -> editText(R.string.settings_city_search, "", false, this::searchCity));
 
-        section(R.string.section_cinema);
-        View keyRow = addRow(R.string.settings_tmdb_key, () -> keyValue(), null);
-        keyRow.setOnClickListener(v -> editText(R.string.settings_tmdb_key, prefs.tmdbKey(), true, text -> prefs.setTmdbKey(text)));
-        addRow(R.string.settings_tmdb_hint, null, null).setFocusable(false);
-
-        View youtubeRow = addRow(R.string.settings_youtube_key, () -> prefs.youtubeKey().isEmpty()
-                ? getString(R.string.settings_none) : getString(R.string.key_set), null);
-        youtubeRow.setOnClickListener(v -> editText(R.string.settings_youtube_key, prefs.youtubeKey(), true, text -> prefs.setYoutubeKey(text)));
-        addRow(R.string.settings_youtube_hint, null, null).setFocusable(false);
+        section(R.string.section_content);
+        View sourceRow = addRow(R.string.settings_source, () -> sourceName(), null);
+        sourceRow.setOnClickListener(v -> chooseSource());
+        View permissionRow = addRow(R.string.settings_tv_permission, () -> getString(TvChannels.permissionGranted(this)
+                ? R.string.permission_granted : R.string.permission_missing), null);
+        permissionRow.setOnClickListener(v -> {
+            if (TvChannels.permissionGranted(this)) {
+                Toast.makeText(this, R.string.permission_granted, Toast.LENGTH_SHORT).show();
+            } else {
+                requestPermissions(new String[] {TvChannels.PERMISSION}, 9);
+            }
+        });
+        addRow(R.string.settings_source_hint, null, null).setFocusable(false);
 
         section(R.string.section_status);
-        addRow(R.string.status_tmdb, () -> statusText(prefs.status("tmdb")), null);
-        addRow(R.string.status_youtube, () -> statusText(prefs.status("youtube")), null);
+        addRow(R.string.status_content, () -> statusText(prefs.status("channels")), null);
         addRow(R.string.status_weather, () -> statusText(prefs.status("weather")), null);
-        addRow(R.string.status_resume, () -> getString(ResumeRegistry.available()
-                ? R.string.status_resume_on : R.string.status_resume_off), null);
         addRow(R.string.status_resume_hint, null, null).setFocusable(false);
 
         section(R.string.section_about);
@@ -191,10 +192,10 @@ public final class SettingsActivity extends Activity {
         return getString(prefs.animatedWallpaper() ? R.string.value_on : R.string.value_off);
     }
 
-    private String keyValue() {
-        if (!prefs.tmdbKey().isEmpty()) return getString(R.string.key_set);
-        if (!BuildConfig.TMDB_KEY.isEmpty()) return getString(R.string.key_built_in);
-        return getString(R.string.settings_none);
+    private String sourceName() {
+        String saved = prefs.sourcePackage();
+        if (saved.isEmpty()) return getString(R.string.source_auto);
+        return saved;
     }
 
     private String statusText(String code) {
@@ -204,8 +205,9 @@ public final class SettingsActivity extends Activity {
         switch (status.kind) {
             case OK: return getString(R.string.status_ok, when);
             case STALE: return getString(R.string.status_stale, when);
-            case NO_KEY: return getString(R.string.status_no_key);
-            case BAD_KEY: return getString(R.string.status_bad_key);
+            case NO_SOURCE: return getString(R.string.status_no_source);
+            case NO_PERMISSION: return getString(R.string.status_no_permission);
+            case NOTHING: return getString(R.string.status_nothing);
             case NO_CITY: return getString(R.string.status_no_city);
             case OFFLINE: return getString(R.string.status_offline);
             case FAILED: return getString(R.string.status_failed);
@@ -345,6 +347,31 @@ public final class SettingsActivity extends Activity {
             dialog.option(getString(R.string.dialog_cancel), () -> { });
             dialog.show();
         });
+    }
+
+    /** Lists the installed apps to pick the one whose home-screen content the panel shows. */
+    private void chooseSource() {
+        AppRepository.loadAsync(this, true, apps -> {
+            if (isDestroyed()) return;
+            ChoiceDialog dialog = new ChoiceDialog(this, getString(R.string.settings_source));
+            dialog.option(getString(R.string.source_auto), () -> {
+                prefs.setSourcePackage("");
+                refresh();
+            });
+            for (final AppEntry app : apps) {
+                dialog.option(app.label, () -> {
+                    prefs.setSourcePackage(app.packageName);
+                    refresh();
+                });
+            }
+            dialog.show();
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        refresh();
     }
 
     private void resetDock() {

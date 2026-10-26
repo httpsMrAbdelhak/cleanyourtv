@@ -23,7 +23,7 @@ final class SceneWallpaper implements WallpaperSource {
 
     SceneSpec spec() { return spec; }
 
-    boolean light() { return spec.light; }
+    @Override public boolean light() { return spec.light; }
 
     @Override public Drawable load(Context context) {
         return new SceneDrawable(spec);

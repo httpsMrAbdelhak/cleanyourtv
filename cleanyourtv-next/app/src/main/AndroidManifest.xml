@@ -5,13 +5,18 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
-    <!-- One permission only: INTERNET, for the cinema rows (TMDB) and the weather (Open-Meteo). No storage,
-         no location, no secure settings, no accessibility service. ManifestPolicyTest keeps it that way. -->
+    <!-- Two permissions. INTERNET: the weather (Open-Meteo) and the pictures of the streaming app's rows.
+         READ_TV_LISTINGS: reading what the streaming app publishes for the Android TV home screen; the user
+         grants it, and nothing is read before. No storage, no location, no secure settings, no accessibility
+         service. ManifestPolicyTest keeps it that way. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
 
     <!-- Android 11+ package visibility, for the two intents the launcher lists apps with. It replaces
          QUERY_ALL_PACKAGES, which stays out. Android 9 ignores the block. -->
     <queries>
+        <!-- The TV's own content provider of channels and programs (Android 11+ package visibility). -->
+        <provider android:authorities="android.media.tv" />
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
@@ -67,9 +72,5 @@
             android:exported="false"
             android:screenOrientation="landscape" />
 
-        <activity
-            android:name=".DetailActivity"
-            android:exported="false"
-            android:screenOrientation="landscape" />
     </application>
 </manifest>

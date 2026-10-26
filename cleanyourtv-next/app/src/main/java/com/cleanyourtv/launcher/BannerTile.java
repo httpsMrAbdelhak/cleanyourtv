@@ -2,18 +2,17 @@ package com.cleanyourtv.launcher;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 /**
- * A dock tile: a wide rounded banner (the app's own TV banner when it has one) that lifts and gets a ring
- * when it has the focus. The ambient light and the panel above the dock follow the focus; they are driven by
- * the screen, not drawn here.
+ * A wide rounded banner (the app's own TV banner when it has one). In the dock it only lifts when it has the
+ * focus: the sliding glass pane behind it (GlassSelector) is the selection. In the app grid, which has no
+ * such pane, it lights a pane of glass tinted with its own colour behind itself.
  */
 final class BannerTile extends FrameLayout {
-    private static final float FOCUS_SCALE = 1.14f;
+    private static final float FOCUS_SCALE = 1.12f;
     private static final int FOCUS_MS = 180;
 
     /** The app behind the tile, or null for the weather tile. */
@@ -21,7 +20,7 @@ final class BannerTile extends FrameLayout {
     final String label;
     private final ImageView picture;
 
-    BannerTile(Context context, String packageName, String label, int widthPx, int heightPx) {
+    BannerTile(Context context, String packageName, String label, int widthPx, int heightPx, final boolean ownPane) {
         super(context);
         this.packageName = packageName;
         this.label = label;
@@ -31,15 +30,8 @@ final class BannerTile extends FrameLayout {
         setClipChildren(false);
         setLayoutParams(new LayoutParams(widthPx, heightPx));
 
-        float radius = heightPx * 0.2f;
-        GradientDrawable ring = Ui.round(0x00000000, radius + Ui.dp(context, 3));
-        ring.setStroke(Ui.dp(context, 3), Palette.RING);
-        StateListDrawable states = new StateListDrawable();
-        states.addState(new int[] {android.R.attr.state_focused}, ring);
-        states.addState(new int[] {}, Ui.round(0x00000000, radius));
-        setBackground(states);
-
-        int inset = Ui.dp(context, 2);
+        final float radius = heightPx * 0.2f;
+        int inset = Ui.dp(context, 1);
         picture = new ImageView(context);
         picture.setScaleType(ImageView.ScaleType.CENTER_CROP);
         picture.setBackground(Ui.round(Palette.PLACEHOLDER, radius));
@@ -50,6 +42,16 @@ final class BannerTile extends FrameLayout {
             float scale = hasFocus ? FOCUS_SCALE : 1f;
             view.animate().scaleX(scale).scaleY(scale).setDuration(FOCUS_MS).start();
             view.setElevation(hasFocus ? Ui.dp(context, 10) : 0);
+            if (!ownPane) return;
+            if (hasFocus) {
+                int color = packageName == null ? 0 : IconCache.get().colorOf(packageName, 0);
+                if (color == 0) color = Palette.RING;
+                GradientDrawable pane = Ui.round((color & 0x00FFFFFF) | 0x80000000, radius + Ui.dp(context, 8));
+                pane.setStroke(Ui.dp(context, 2), 0xCCFFFFFF);
+                setBackground(pane);
+            } else {
+                setBackground(null);
+            }
         });
     }
 

@@ -11,59 +11,10 @@ import org.json.JSONException;
 import org.junit.Test;
 
 /**
- * The samples below are written from the documented answer shapes of TMDB and Open-Meteo. They are not
- * recordings: the build sandbox could not reach either service, so a real answer has still to be checked on a TV.
+ * The samples below are written from the documented answer shapes of Open-Meteo. They are not recordings:
+ * the build sandbox could not reach the service, so a real answer has still to be checked on a TV.
  */
 public class ParsersTest {
-    private static final String TRENDING = "{\"page\":1,\"results\":["
-            + "{\"id\":1,\"media_type\":\"movie\",\"title\":\"Dune\",\"overview\":\"Sand.\",\"poster_path\":\"/p1.jpg\","
-            + "\"backdrop_path\":\"/b1.jpg\",\"vote_average\":8.1,\"release_date\":\"2021-09-15\"},"
-            + "{\"id\":2,\"media_type\":\"tv\",\"name\":\"Severance\",\"overview\":\"Work.\",\"poster_path\":\"/p2.jpg\","
-            + "\"backdrop_path\":null,\"vote_average\":8.7,\"first_air_date\":\"2022-02-18\"},"
-            + "{\"id\":3,\"media_type\":\"person\",\"name\":\"Someone\",\"poster_path\":\"/p3.jpg\"},"
-            + "{\"id\":4,\"media_type\":\"movie\",\"title\":\"No poster\",\"poster_path\":null},"
-            + "{\"id\":5,\"media_type\":\"movie\",\"title\":\"\",\"poster_path\":\"/p5.jpg\"}"
-            + "]}";
-
-    @Test public void tmdbKeepsFilmsAndSeriesWithPostersOnly() throws JSONException {
-        List<MediaItem> items = TmdbParser.parse(TRENDING, false);
-        assertEquals(2, items.size());
-        MediaItem movie = items.get(0);
-        assertEquals("Dune", movie.title);
-        assertEquals("2021", movie.year);
-        assertEquals(8.1, movie.rating, 0.001);
-        assertFalse(movie.series);
-        assertEquals("/b1.jpg", movie.backdropPath);
-        MediaItem series = items.get(1);
-        assertEquals("Severance", series.title);
-        assertTrue(series.series);
-        assertEquals("2022", series.year);
-        assertEquals("a null backdrop becomes empty", "", series.backdropPath);
-    }
-
-    @Test public void tmdbUsesTheFeedTypeWhenMediaTypeIsAbsent() throws JSONException {
-        String movies = "{\"results\":[{\"id\":9,\"title\":\"M\",\"poster_path\":\"/m.jpg\",\"release_date\":\"\"}]}";
-        String tv = "{\"results\":[{\"id\":9,\"name\":\"S\",\"poster_path\":\"/s.jpg\",\"first_air_date\":\"2020-01-01\"}]}";
-        assertFalse(TmdbParser.parse(movies, false).get(0).series);
-        assertEquals("", TmdbParser.parse(movies, false).get(0).year);
-        assertTrue(TmdbParser.parse(tv, true).get(0).series);
-        assertEquals("S", TmdbParser.parse(tv, true).get(0).title);
-    }
-
-    @Test public void tmdbEmptyOrMissingResultsGiveNoItems() throws JSONException {
-        assertTrue(TmdbParser.parse("{\"results\":[]}", false).isEmpty());
-        assertTrue(TmdbParser.parse("{\"status_message\":\"Invalid API key\"}", false).isEmpty());
-    }
-
-    @Test public void tmdbRejectsGarbage() {
-        try {
-            TmdbParser.parse("<html>not json</html>", false);
-            fail("expected a JSONException");
-        } catch (JSONException expected) {
-            // fine
-        }
-    }
-
     private static final String FORECAST = "{\"latitude\":48.86,\"longitude\":2.35,"
             + "\"current\":{\"time\":\"2026-10-26T14:00\",\"interval\":900,\"temperature_2m\":14.3,\"weather_code\":3,\"is_day\":1},"
             + "\"daily\":{\"time\":[\"2026-10-26\",\"2026-10-27\",\"2026-10-28\"],"

@@ -101,6 +101,14 @@ final class Ui {
         view.setClipToOutline(true);
     }
 
+    /** Gives focus animations room: the parents must not clip an item that grows past its cell. */
+    static void allowOverflow(View parent) {
+        if (parent instanceof android.view.ViewGroup) {
+            ((android.view.ViewGroup) parent).setClipChildren(false);
+            ((android.view.ViewGroup) parent).setClipToPadding(false);
+        }
+    }
+
     static Drawable placeholder() {
         return new ColorDrawable(Palette.PLACEHOLDER);
     }
