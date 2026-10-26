@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CleanYourTV</string>
+
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+
+    <string name="dock_all_apps">All apps</string>
+    <string name="dock_settings">Settings</string>
+    <string name="dock_hint">Hold OK on an app to edit the dock</string>
+
+    <string name="library_title">Apps</string>
+    <string name="library_empty">No apps found</string>
+
+    <string name="menu_add_dock">Add to dock</string>
+    <string name="menu_remove_dock">Remove from dock</string>
+    <string name="menu_move_left">Move left</string>
+    <string name="menu_move_right">Move right</string>
+
+    <string name="toast_dock_full">The dock is full (%1$d apps)</string>
+    <string name="toast_added">Added to the dock</string>
+    <string name="toast_removed">Removed from the dock</string>
+    <string name="toast_launch_failed">This app cannot be opened</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_accent">Accent colour</string>
+    <string name="settings_wallpaper">Wallpaper</string>
+    <string name="settings_clock">Clock format</string>
+    <string name="settings_name">Name in the greeting</string>
+    <string name="settings_name_none">None</string>
+    <string name="settings_nontv">Show apps not made for TV</string>
+    <string name="settings_reset_dock">Reset the dock</string>
+    <string name="settings_reset_confirm">Restore the default dock</string>
+    <string name="settings_home">Home screen of the system</string>
+    <string name="settings_home_open">Open</string>
+    <string name="settings_home_failed">This TV has no home screen setting. Use Settings, then Apps.</string>
+    <string name="settings_version">CleanYourTV %1$s</string>
+
+    <string name="value_on">On</string>
+    <string name="value_off">Off</string>
+
+    <string name="clock_system">System</string>
+    <string name="clock_24">24 hours</string>
+    <string name="clock_12">12 hours</string>
+
+    <string name="accent_blue">Blue</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_pink">Pink</string>
+    <string name="accent_white">White</string>
+
+    <string name="wallpaper_aurora">Aurora</string>
+    <string name="wallpaper_midnight">Midnight</string>
+    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_dusk">Dusk</string>
+    <string name="wallpaper_forest">Forest</string>
+
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_name_hint">Your first name</string>
+</resources>

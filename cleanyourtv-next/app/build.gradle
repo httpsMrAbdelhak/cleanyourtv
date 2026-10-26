@@ -1,0 +1,66 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Release signing comes from a keystore that stays on your machine: pass CYTV_KEYSTORE, CYTV_KEYSTORE_PASSWORD,
+// CYTV_KEY_ALIAS and CYTV_KEY_PASSWORD as -P properties or environment variables (docs/BUILD.md).
+// Nothing secret is ever read from, or written to, the repository.
+def secret = { String name -> providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull }
+def keystorePath = secret('CYTV_KEYSTORE')
+
+android {
+    namespace 'com.cleanyourtv.launcher'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.cleanyourtv.launcher'
+        // Android 8.0. The target is Android TV 9 (API 28); 26 keeps adaptive icons without a fallback.
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '0.1.0'
+        // English and French only: other locales' strings from the SDK are dropped from the APK.
+        resourceConfigurations += ['en', 'fr']
+    }
+
+    signingConfigs {
+        if (keystorePath != null) {
+            release {
+                storeFile file(keystorePath)
+                storePassword secret('CYTV_KEYSTORE_PASSWORD')
+                keyAlias secret('CYTV_KEY_ALIAS')
+                keyPassword secret('CYTV_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Without a keystore the release APK stays unsigned, and Android refuses to install it.
+            // The debug build (assembleDebug) is the one to sideload for a first test.
+            if (keystorePath != null) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    lint {
+        abortOnError true
+    }
+}
+
+// No dependencies on purpose: the launcher uses the Android framework only (no AndroidX, no native code),
+// so the APK stays small and runs on armeabi-v7a, arm64-v8a and x86 alike.
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}

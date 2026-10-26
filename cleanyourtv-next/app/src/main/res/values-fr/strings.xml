@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CleanYourTV</string>
+
+    <string name="greeting_morning">Bonjour</string>
+    <string name="greeting_afternoon">Bon après-midi</string>
+    <string name="greeting_evening">Bonsoir</string>
+
+    <string name="dock_all_apps">Toutes les apps</string>
+    <string name="dock_settings">Réglages</string>
+    <string name="dock_hint">Maintenez OK sur une app pour modifier le dock</string>
+
+    <string name="library_title">Applications</string>
+    <string name="library_empty">Aucune application trouvée</string>
+
+    <string name="menu_add_dock">Ajouter au dock</string>
+    <string name="menu_remove_dock">Retirer du dock</string>
+    <string name="menu_move_left">Déplacer à gauche</string>
+    <string name="menu_move_right">Déplacer à droite</string>
+
+    <string name="toast_dock_full">Le dock est plein (%1$d apps)</string>
+    <string name="toast_added">Ajoutée au dock</string>
+    <string name="toast_removed">Retirée du dock</string>
+    <string name="toast_launch_failed">Impossible d\'ouvrir cette application</string>
+
+    <string name="settings_title">Réglages</string>
+    <string name="settings_accent">Couleur d\'accent</string>
+    <string name="settings_wallpaper">Fond d\'écran</string>
+    <string name="settings_clock">Format de l\'heure</string>
+    <string name="settings_name">Prénom dans l\'accueil</string>
+    <string name="settings_name_none">Aucun</string>
+    <string name="settings_nontv">Afficher les apps non conçues pour la TV</string>
+    <string name="settings_reset_dock">Réinitialiser le dock</string>
+    <string name="settings_reset_confirm">Rétablir le dock par défaut</string>
+    <string name="settings_home">Écran d\'accueil du système</string>
+    <string name="settings_home_open">Ouvrir</string>
+    <string name="settings_home_failed">Cette TV n\'a pas de réglage d\'écran d\'accueil. Utilisez Paramètres, puis Applications.</string>
+    <string name="settings_version">CleanYourTV %1$s</string>
+
+    <string name="value_on">Activé</string>
+    <string name="value_off">Désactivé</string>
+
+    <string name="clock_system">Système</string>
+    <string name="clock_24">24 heures</string>
+    <string name="clock_12">12 heures</string>
+
+    <string name="accent_blue">Bleu</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Vert</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_pink">Rose</string>
+    <string name="accent_white">Blanc</string>
+
+    <string name="wallpaper_aurora">Aurore</string>
+    <string name="wallpaper_midnight">Minuit</string>
+    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_dusk">Crépuscule</string>
+    <string name="wallpaper_forest">Forêt</string>
+
+    <string name="dialog_save">Enregistrer</string>
+    <string name="dialog_cancel">Annuler</string>
+    <string name="dialog_name_hint">Votre prénom</string>
+</resources>
