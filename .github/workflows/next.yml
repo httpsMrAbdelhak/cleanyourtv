@@ -37,6 +37,16 @@ jobs:
         run: |
           size=$(stat -c %s app/build/outputs/apk/debug/app-debug.apk)
           echo "debug APK: $((size / 1024)) KB"
+      - name: What the APK really contains
+        run: |
+          apk=app/build/outputs/apk/debug/app-debug.apk
+          aapt2="$ANDROID_HOME/build-tools/34.0.0/aapt2"
+          "$aapt2" dump badging "$apk" | grep -E "^(package|sdkVersion|targetSdkVersion|uses-permission|native-code|launchable-activity)" || true
+          echo "native libraries (.so) in the APK: $(unzip -l "$apk" | grep -c '\.so$' || true)"
+          "$aapt2" dump badging "$apk" | grep -q "name='com.cleanyourtv.launcher'" || { echo "unexpected package name"; exit 1; }
+          if "$aapt2" dump badging "$apk" | grep -q "^native-code"; then echo "unexpected native code"; exit 1; fi
+          test "$(unzip -l "$apk" | grep -c '\.so$' || true)" = "0" || { echo "unexpected .so file"; exit 1; }
+          "$aapt2" dump badging "$apk" | grep "^uses-permission" | grep -v "android.permission.INTERNET" && { echo "unexpected permission"; exit 1; } || true
       # A debug APK is signed with the public debug key: fine to sideload for a test, never to publish.
       # AGENTS.md keeps APKs out of the repository and out of release workflows. This is a short-lived
       # workflow artifact (7 days) for the owner of this fork, not a release; remove the step to drop it.
