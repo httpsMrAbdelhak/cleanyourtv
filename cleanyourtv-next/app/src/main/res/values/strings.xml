@@ -124,8 +124,4 @@
     <string name="status_no_permission">Permission needed</string>
     <string name="status_nothing">The app published nothing</string>
     <string name="status_resume_hint">Continue watching comes from what the app itself publishes for the TV home screen. It appears when the app does it and the TV allows it; nothing is simulated.</string>
-    <string name="wallpaper_sunset">Sunset</string>
-    <string name="wallpaper_mauve">Mauve dawn</string>
-    <string name="wallpaper_lake">Lake at dusk</string>
-    <string name="wallpaper_mist">Misty mountains</string>
 </resources>

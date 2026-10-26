@@ -52,6 +52,8 @@ android {
 
     testOptions {
         unitTests.returnDefaultValues = true
+        // The layout test runs the real home screen on the JVM (Robolectric) and needs the app's resources.
+        unitTests.includeAndroidResources = true
     }
 
     lint {
@@ -62,8 +64,9 @@ android {
 // No runtime dependency on purpose: the launcher uses the Android framework only (no AndroidX, no native
 // code), so the APK stays small and runs on armeabi-v7a, arm64-v8a and x86 alike. The two libraries below
 // are for the JVM unit tests only and never reach the APK; org.json is there because the Android stub
-// used in unit tests does not implement it.
+// used in unit tests does not implement it, and Robolectric runs the real screen to check where things land.
 dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20231013'
+    testImplementation 'org.robolectric:robolectric:4.13'
 }

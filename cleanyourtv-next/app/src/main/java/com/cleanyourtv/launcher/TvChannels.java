@@ -206,17 +206,22 @@ final class TvChannels {
         String title = nonNull(c.getString(0));
         String episode = nonNull(c.getString(2));
         String subtitle = episode.isEmpty() ? nonNull(c.getString(1)) : episode;
-        int aspect = c.isNull(9) ? TvContract.PreviewPrograms.ASPECT_RATIO_2_3 : c.getInt(9);
-        boolean landscape = aspect == TvContract.PreviewPrograms.ASPECT_RATIO_16_9
-                || aspect == TvContract.PreviewPrograms.ASPECT_RATIO_3_2
-                || aspect == TvContract.PreviewPrograms.ASPECT_RATIO_4_3;
         String poster = nonNull(c.getString(3));
         String thumb = nonNull(c.getString(4));
-        // A landscape card prefers the thumbnail; a poster card prefers the poster.
-        String image = landscape ? (thumb.isEmpty() ? poster : thumb) : (poster.isEmpty() ? thumb : poster);
+        int aspect = c.isNull(9) ? TvContract.PreviewPrograms.ASPECT_RATIO_2_3 : c.getInt(9);
+        // The poster of the film or series, never the picture of one episode, whenever the app gives a poster.
+        boolean usePoster = ShapePolicy.usePoster(!poster.isEmpty());
+        String image = usePoster ? poster : thumb;
+        TvEntry.Shape shape = ShapePolicy.shape(usePoster, isLandscape(aspect));
         float progress = ProgramKind.progress(c.getLong(8), c.getLong(7));
         return new TvEntry(section, title, subtitle, image, nonNull(c.getString(5)), progress,
-                ProgramKind.of(c.getInt(6)), landscape || resume ? TvEntry.Shape.LANDSCAPE : TvEntry.Shape.POSTER, resume);
+                ProgramKind.of(c.getInt(6)), shape, resume);
+    }
+
+    private static boolean isLandscape(int aspect) {
+        return aspect == TvContract.PreviewPrograms.ASPECT_RATIO_16_9
+                || aspect == TvContract.PreviewPrograms.ASPECT_RATIO_3_2
+                || aspect == TvContract.PreviewPrograms.ASPECT_RATIO_4_3;
     }
 
     private static String nonNull(String text) {

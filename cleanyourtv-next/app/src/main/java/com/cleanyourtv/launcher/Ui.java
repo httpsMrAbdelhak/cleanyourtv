@@ -41,18 +41,29 @@ final class Ui {
     private static Typeface medium;
 
     static synchronized Typeface light(Context context) {
-        if (light == null) light = context.getResources().getFont(R.font.outfit_light);
+        if (light == null) light = font(context, R.font.outfit_light, "sans-serif-light");
         return light;
     }
 
     static synchronized Typeface regular(Context context) {
-        if (regular == null) regular = context.getResources().getFont(R.font.outfit_regular);
+        if (regular == null) regular = font(context, R.font.outfit_regular, "sans-serif");
         return regular;
     }
 
     static synchronized Typeface medium(Context context) {
-        if (medium == null) medium = context.getResources().getFont(R.font.outfit_medium);
+        if (medium == null) medium = font(context, R.font.outfit_medium, "sans-serif-medium");
         return medium;
+    }
+
+    /** The bundled font, or a system one if it cannot be loaded: a missing font must never stop the home screen. */
+    private static Typeface font(Context context, int resource, String fallback) {
+        try {
+            Typeface face = context.getResources().getFont(resource);
+            if (face != null) return face;
+        } catch (RuntimeException e) {
+            // fall through to the system font
+        }
+        return Typeface.create(fallback, Typeface.NORMAL);
     }
 
     static TextView text(Context context, float sp, int color, Typeface face) {

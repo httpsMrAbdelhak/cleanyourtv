@@ -8,11 +8,11 @@ It lives beside the reference launcher in `launcher/`, which it does not touch.
 ## What it does
 
 - **A clean, light look**: a pale wallpaper, dark text, frosted glass. A dark wallpaper switches the whole interface to light text on smoked glass: the theme follows the wallpaper.
-- **A smoked-glass dock of wide banners**: each app shows its own TV banner (Netflix, YouTube and most streaming apps ship one); an app without one gets its icon on a gradient of its own colour. **A pane of glass slides from banner to banner behind the selected one and takes its colour**, with a soft light of the same colour under the dock.
+- **A smoked-glass dock of wide banners**: each app shows its own TV banner (Netflix, YouTube and most streaming apps ship one); an app without one gets its icon on a gradient of its own colour. The selected banner gets a thin ring and lifts. **A light in the selected app's colour runs along the whole bottom of the screen, corner to corner, and stays put; only a brighter spot under the selected app moves.**
 - **Down on the dock opens the list of all apps**, as the same wide banners. Hold OK on a banner to add or remove it from the dock.
-- **Content from your streaming app** (Nuvio): the panel above the dock shows what the app publishes for the Android TV home screen, with the tabs Explore, Movies and Series. No TMDB or YouTube key. It stays whichever dock tile is selected. See `docs/STREAMING-CONTENT.md`.
+- **Content from your streaming app** (Nuvio): the panel above the dock shows the posters of the films and series the app publishes for the Android TV home screen (not episode pictures), with the tabs Explore, Movies and Series. No TMDB or YouTube key. It stays whichever dock tile is selected. See `docs/STREAMING-CONTENT.md`.
 - **Weather**: the weather tile shows the temperature; selecting it shows the current weather and seven days for a city you choose. No key.
-- **Wallpapers**: three light and six dark built-in scenes, four painted landscapes (sunset, mauve dawn, lake at dusk, misty mountains), an optional slow animation, and a picture from the device. Preview before applying.
+- **Wallpapers**: three light and six dark built-in scenes, an optional slow animation, and a picture from the device. Preview before applying.
 - **Liquid Glass**, with a Performance level that flattens it.
 - **Remote only**: Up, Down, Left, Right, OK, Back, and Menu.
 - **Languages**: English and French.
@@ -35,7 +35,6 @@ What is verified and what is not:
 | Live Open-Meteo answers | **Not tested**: the sandbox that wrote this could not reach it |
 | Smoothness and memory on the Mi TV Stick | **Not measured**: needs the real device |
 | Home button on the Mi TV Stick | Unknown, see `docs/RECOVERY.md` |
-| Photographic wallpapers | **None bundled**: no photo site was reachable from the sandbox. The landscapes are painted in code; pick your own photo from the device in the gallery |
 
 ## Next steps
 

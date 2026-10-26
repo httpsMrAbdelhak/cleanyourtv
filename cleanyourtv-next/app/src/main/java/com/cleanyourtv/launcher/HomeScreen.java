@@ -26,8 +26,8 @@ import java.util.Set;
 
 /**
  * The whole home screen, in three zones like tvOS: a header (greeting, three tabs, clock and the settings
- * button), a content panel, and a smoked-glass dock of wide app banners at the bottom. A pane of glass slides
- * behind the selected banner and takes its colour, and a soft light of the same colour spreads under the dock.
+ * button), a content panel, and a smoked-glass dock of wide app banners at the bottom. The selected banner gets a
+ * ring and lifts, and a light of its colour runs along the whole bottom of the screen, brightest under it.
  * The dock holds the focus at start. Up climbs to the panel, then the header; Down on the dock opens the list
  * of all apps, as wide banners; Back from the panel or the header returns to the dock.
  */
@@ -47,13 +47,11 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
     private final Prefs prefs;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final AmbientGlow glow;
-    private final GlassSelector selector;
     private final TextView title;
     private final TextClock clock;
     private final TextClock date;
     private final TextView[] tabs = new TextView[3];
     private final View settingsButton;
-    private final FrameLayout dockFrame;
     private final LinearLayout dock;
     private final ContentPanel panel;
     private final Map<String, String> labels = new HashMap<>();
@@ -164,25 +162,19 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         panelParams.setMargins(side - Ui.dp(context, 6), Ui.dp(context, 120), 0, 0);
         addView(panel, panelParams);
 
-        // --- dock: smoked glass, a sliding pane behind the banners, the banners on top ---
-        dockFrame = new FrameLayout(context);
-        dockFrame.setClipChildren(false);
-        dockFrame.setClipToPadding(false);
-        int pad = Ui.dp(context, 14);
-        dockFrame.setPadding(pad, pad, pad, pad);
-        dockFrame.setBackground(new GlassDrawable(Ui.dp(context, 30), Ui.dp(context, 1.5f), true, false, true, prefs.effects()));
-        selector = new GlassSelector(context);
-        dockFrame.addView(selector, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // --- dock: smoked glass, wide banners ---
         dock = new LinearLayout(context);
         dock.setOrientation(LinearLayout.HORIZONTAL);
         dock.setGravity(Gravity.CENTER);
         dock.setClipChildren(false);
         dock.setClipToPadding(false);
-        dockFrame.addView(dock, new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        int pad = Ui.dp(context, 14);
+        dock.setPadding(pad, pad, pad, pad);
+        dock.setBackground(new GlassDrawable(Ui.dp(context, 30), Ui.dp(context, 1.5f), true, false, true, prefs.effects()));
         LayoutParams dockParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         dockParams.bottomMargin = Ui.dp(context, 26);
-        addView(dockFrame, dockParams);
+        addView(dock, dockParams);
 
         updateTabStyles();
     }
@@ -237,6 +229,23 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
 
     void onLookChanged() {
         panel.onLookChanged();
+    }
+
+    // Hooks for the layout test: the three zones, and a list of apps without a PackageManager.
+    View titleView() {
+        return title;
+    }
+
+    View panelView() {
+        return panel;
+    }
+
+    View dockView() {
+        return dock;
+    }
+
+    void showApps(List<AppEntry> apps) {
+        onAppsLoaded(apps);
     }
 
     /** The permission question was answered: the panel looks again. */
@@ -336,7 +345,6 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         View focused = dock.getFocusedChild();
         int focusIndex = focusOverride >= 0 ? focusOverride : (focused == null ? -1 : dock.indexOfChild(focused));
         dock.removeAllViews();
-        selector.hide();
 
         Context context = getContext();
         int count = shown.size() + 1;
@@ -401,13 +409,12 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
                 handler.postDelayed(applySelection, SELECT_DELAY_MS);
             } else if (!isInDock(findFocus())) {
                 glow.fadeOut();
-                selector.hide();
             }
         });
         dock.addView(tile, params);
     }
 
-    /** The glass pane slides under the selected banner and the light under the dock takes its colour. */
+    /** The light along the bottom takes the colour of the selected app and is brightest under it. */
     private void lightUnder(final BannerTile tile) {
         if (tile.getWidth() == 0) {
             // Not laid out yet (first focus): try again once it is.
@@ -421,13 +428,6 @@ final class HomeScreen extends FrameLayout implements ContentPanel.Host {
         int[] where = new int[2];
         tile.getLocationInWindow(where);
         glow.aim(where[0] + tile.getWidth() / 2f, color);
-        // The pane is a little bigger than the banner, which lifts above it.
-        float growX = Ui.dp(getContext(), 13);
-        float growY = Ui.dp(getContext(), 10);
-        // The selector fills the dock frame inside its padding, so its origin is not the frame's.
-        float left = dock.getLeft() - selector.getLeft() + tile.getLeft() - growX;
-        float top = dock.getTop() - selector.getTop() + tile.getTop() - growY;
-        selector.moveTo(left, top, left + tile.getWidth() + 2 * growX, top + tile.getHeight() + 2 * growY, color);
     }
 
     /** Tells the panel what the dock selection is, once the focus has rested on it for a moment. */

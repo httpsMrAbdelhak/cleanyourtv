@@ -6,7 +6,8 @@ The panel above the dock, with its three tabs Explore, Movies and Series, shows 
 
 Android TV has a content provider for the home screen (`android.media.tv`). An app that supports it publishes rows there: **"Continue watching"** (Watch Next) and its own **channels** (preview programs), each with a title, a picture, a progress and the intent that opens it. The stock home screen displays them. CleanYourTV reads the same rows for the app you chose, and shows them in its own style:
 
-- Explore: everything the app published, "Continue watching" first, then each of its channels.
+- Explore: the films and series the app published, "Continue watching" first, then each of its channels, one card per title. Clips and other kinds are left out unless there is nothing else.
+- The picture is the **poster of the film or series**, not the still of an episode, whenever the app publishes a poster. Without a poster, its thumbnail is used.
 - Movies and Series: the same, filtered by the type the app gave each entry (movie, series, season, episode).
 - OK opens the entry with the intent the app published, or resumes it. For safety, an intent is started only if it targets the chosen app itself.
 - The panel keeps showing this content while you move along the dock, whichever tile is selected. Only the weather tile swaps it for the weather.

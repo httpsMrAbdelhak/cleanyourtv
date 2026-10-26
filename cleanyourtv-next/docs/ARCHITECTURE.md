@@ -10,7 +10,6 @@ HomeActivity          host: the wallpaper under one HomeScreen; rebuilds when th
     ContentPanel      the panel above the dock: the streaming app's content, or the weather
       CardRail        a row of cards (posters, landscape cards with a progress bar), loaded near the focus only
       WeatherPanel    current weather and seven days on one glass card
-    GlassSelector     the pane of glass that slides behind the selected banner and takes its colour
 LibraryActivity       every installed app as wide banners (opened by Down on the dock)
 SettingsActivity      sections of rows; every change saved at once
 WallpaperActivity     gallery with live preview; picture from the device
@@ -22,10 +21,11 @@ Where the content comes from (`TvChannels`): the TV's own provider of channels a
 
 | Piece | What it is |
 |---|---|
-| `GlassDrawable` | Liquid Glass: a panel samples the frosted wallpaper at its own position, adds a tint brighter at the top and an edge lit from the top left. The dock uses its "clear" style (smoked, see-through) rather than the milky one. |
+| `GlassDrawable` | Liquid Glass: a panel samples the frosted wallpaper at its own position, adds a tint brighter at the top and an edge lit from the top left. The dock uses its "clear" style (smoked, see-through) rather than the milky one. The dock selection is a thin ring plus a lift on the banner. |
 | `Backdrop` | The frosted wallpaper: drawn once into 320x180, box-blurred once (`BoxBlur`), rebuilt only when the wallpaper or effects level changes. Never recomputed per frame, never a full-size blur. |
-| `AmbientGlow` | The light under the dock: one white radial gradient, tinted by a colour filter and stretched by the canvas. Moves, recolours and fades in 420 ms. |
+| `AmbientGlow` | The light along the bottom of the screen, corner to corner: a fixed band plus a brighter spot under the selected app, each one white gradient tinted by a colour filter. Only the spot slides; colour and fade animate in 420 ms. |
 | `DominantColor` | The colour of an icon: the most vivid hue of a 24x24 copy, lifted to glow brightness; a grey icon gives the accent colour. |
+| `HomeLayoutTest` | Runs the real home screen on a simulated 1920x1080 display (Robolectric) and checks the header is on top, the dock at the bottom and the panel between. |
 | `SceneDrawable` | A wallpaper made of soft radial lights over a dark gradient: no bitmap, sharp at any size. Animated only by moving the lights along a seamless loop. |
 | `WallpaperView` | Draws the wallpaper and two shades. Animates at about 15 fps, only while visible, and falls back to the still picture for good if the TV cannot keep up. |
 | Outfit font | Variable font, SIL OFL. Loaded once. |

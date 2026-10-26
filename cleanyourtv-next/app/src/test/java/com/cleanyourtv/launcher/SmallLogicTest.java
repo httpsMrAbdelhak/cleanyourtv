@@ -112,37 +112,4 @@ public class SmallLogicTest {
     private static int brightness(int argb) {
         return (((argb >> 16) & 0xFF) + ((argb >> 8) & 0xFF) + (argb & 0xFF)) / 3;
     }
-
-    @Test public void landscapesAreRegisteredAndStill() {
-        int landscapes = 0;
-        for (WallpaperSource source : Wallpapers.ALL) {
-            if (source instanceof LandscapeWallpaper) {
-                landscapes++;
-                assertFalse(source.id() + " does not move", source.animatable());
-            }
-        }
-        assertTrue("sunset, mauve dawn, lake and misty mountains", landscapes >= 4);
-    }
-
-    @Test public void landscapeThemeMatchesItsSky() {
-        for (WallpaperSource source : Wallpapers.ALL) {
-            if (!(source instanceof LandscapeWallpaper)) continue;
-            LandscapeSpec spec = ((LandscapeWallpaper) source).spec();
-            assertEquals(source.id() + " light flag must follow the sky", spec.skyLuma() >= 150f, spec.light);
-            assertEquals(spec.sky.length, spec.skyStops.length);
-            assertTrue(source.id(), spec.ranges.length >= 2);
-            for (int i = 1; i < spec.skyStops.length; i++) assertTrue(spec.skyStops[i] > spec.skyStops[i - 1]);
-        }
-    }
-
-    @Test public void ridgeIsRepeatableAndInRange() {
-        for (int seed = 1; seed < 25; seed++) {
-            for (float x = 0f; x <= 1f; x += 0.01f) {
-                float h = Ridge.height(x, seed);
-                assertTrue(h >= 0f && h <= 1f);
-                assertEquals(h, Ridge.height(x, seed), 0f);
-            }
-        }
-        assertTrue("two seeds give two outlines", Ridge.height(0.37f, 3) != Ridge.height(0.37f, 4));
-    }
 }

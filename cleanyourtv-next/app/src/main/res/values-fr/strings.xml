@@ -124,8 +124,4 @@
     <string name="status_no_permission">Autorisation requise</string>
     <string name="status_nothing">L\'app n\'a rien publié</string>
     <string name="status_resume_hint">La reprise de lecture vient de ce que l\'app publie elle-même pour l\'écran d\'accueil TV. Elle apparaît quand l\'app le fait et que la TV l\'autorise ; rien n\'est simulé.</string>
-    <string name="wallpaper_sunset">Coucher de soleil</string>
-    <string name="wallpaper_mauve">Aube mauve</string>
-    <string name="wallpaper_lake">Lac au crépuscule</string>
-    <string name="wallpaper_mist">Montagnes brumeuses</string>
 </resources>

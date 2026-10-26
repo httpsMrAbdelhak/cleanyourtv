@@ -4,6 +4,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -13,14 +14,16 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 /**
- * The soft light that spreads along the bottom of the screen under the selected dock icon. One white radial
- * gradient, tinted with a colour filter and stretched into a wide ellipse by the canvas: moving, recolouring
- * and fading it costs a few state changes per frame, never a bitmap or a blur. When the focus leaves the
- * dock the light fades out. It has no input of its own and never takes the focus.
+ * The light along the bottom of the screen, from corner to corner, in the colour of the selected app. The band
+ * itself never moves; only a brighter spot under the selected app slides sideways, so the selection shows
+ * without the whole light travelling. Both are one white gradient each, tinted by a colour filter: changing
+ * colour, moving the spot and fading cost a few state changes per frame, never a bitmap or a blur. When the
+ * focus leaves the dock the light fades out. It has no input of its own and never takes the focus.
  */
 final class AmbientGlow extends View {
     private static final int MOVE_MS = 420;
 
+    private final Paint band = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final ArgbEvaluator argb = new ArgbEvaluator();
     private final ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
@@ -36,6 +39,7 @@ final class AmbientGlow extends View {
     private float curAlpha;
     private boolean placed;
     private float strength = 0.85f;
+    private int lastHeight = -1;
 
     AmbientGlow(Context context) {
         super(context);
@@ -59,7 +63,7 @@ final class AmbientGlow extends View {
         this.strength = strength;
     }
 
-    /** Lights the glow under centerX (in this view's coordinates) with colour, gliding from where it was. */
+    /** Lights the band, with the brighter spot under centerX (in this view's coordinates) with colour, gliding from where it was. */
     void aim(float centerX, int color) {
         if (!placed) {
             // First light: appear in place, from nothing, instead of sliding in from the corner.
@@ -93,9 +97,19 @@ final class AmbientGlow extends View {
         int height = getHeight();
         paint.setColorFilter(new PorterDuffColorFilter(curColor, PorterDuff.Mode.SRC_IN));
         paint.setAlpha(Math.round(255 * curAlpha * strength));
+        // The band: the whole width, strongest at the bottom edge, gone above the lower third.
+        if (lastHeight != height) {
+            band.setShader(new LinearGradient(0f, height, 0f, height * 0.25f,
+                    new int[] {0xFFFFFFFF, 0x55FFFFFF, 0x00FFFFFF}, new float[] {0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
+            lastHeight = height;
+        }
+        band.setColorFilter(new PorterDuffColorFilter(curColor, PorterDuff.Mode.SRC_IN));
+        band.setAlpha(Math.round(255 * curAlpha * strength * 0.55f));
+        canvas.drawRect(0f, 0f, width, height, band);
+        // The spot: brighter under the selected app. Only this part slides.
         canvas.save();
         canvas.translate(curX, height);
-        canvas.scale(width * 0.36f, height * 0.95f);
+        canvas.scale(width * 0.20f, height * 0.85f);
         canvas.drawCircle(0f, 0f, 1f, paint);
         canvas.restore();
     }

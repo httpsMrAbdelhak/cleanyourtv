@@ -49,7 +49,9 @@ public class ChannelsLogicTest {
                 entry("A series", TvEntry.Kind.SERIES, false),
                 entry("A clip", TvEntry.Kind.OTHER, false),
                 entry("Resumed episode", TvEntry.Kind.SERIES, true)));
-        assertEquals(4, EntryFilter.apply(all, EntryFilter.EXPLORE).size());
+        List<TvEntry> explore = EntryFilter.apply(all, EntryFilter.EXPLORE);
+        assertEquals("Explore shows films and series, not clips", 3, explore.size());
+        for (TvEntry shown : explore) assertTrue(shown.kind != TvEntry.Kind.OTHER);
         List<TvEntry> movies = EntryFilter.apply(all, EntryFilter.MOVIES);
         assertEquals(1, movies.size());
         assertEquals("A film", movies.get(0).title);
@@ -88,5 +90,27 @@ public class ChannelsLogicTest {
         List<String> picked = DockDefaults.pick(installed);
         assertEquals("dev.nuvio.android", picked.get(0));
         assertEquals("no duplicate", picked.size(), new java.util.HashSet<>(picked).size());
+    }
+
+    @Test public void exploreFallsBackToOtherKindsRatherThanAnEmptyShelf() {
+        List<TvEntry> clips = Arrays.asList(entry("Clip A", TvEntry.Kind.OTHER, false), entry("Clip B", TvEntry.Kind.OTHER, false));
+        assertEquals(2, EntryFilter.apply(clips, EntryFilter.EXPLORE).size());
+        assertEquals(0, EntryFilter.apply(clips, EntryFilter.MOVIES).size());
+    }
+
+    @Test public void oneCardPerTitle() {
+        List<TvEntry> all = Arrays.asList(entry("Severance", TvEntry.Kind.SERIES, true),
+                entry("severance ", TvEntry.Kind.SERIES, false), entry("Dune", TvEntry.Kind.MOVIE, false));
+        List<TvEntry> kept = EntryFilter.oneCardPerTitle(all);
+        assertEquals(2, kept.size());
+        assertTrue("the first card (Continue watching) wins", kept.get(0).resume);
+    }
+
+    @Test public void thePosterComesBeforeTheEpisodePicture() {
+        assertTrue(ShapePolicy.usePoster(true));
+        assertFalse("no poster: the thumbnail is used", ShapePolicy.usePoster(false));
+        assertEquals(TvEntry.Shape.POSTER, ShapePolicy.shape(true, false));
+        assertEquals("a landscape poster keeps a landscape card", TvEntry.Shape.LANDSCAPE, ShapePolicy.shape(true, true));
+        assertEquals(TvEntry.Shape.LANDSCAPE, ShapePolicy.shape(false, false));
     }
 }
