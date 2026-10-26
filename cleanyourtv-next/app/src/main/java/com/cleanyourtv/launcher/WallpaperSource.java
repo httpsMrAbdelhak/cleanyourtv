@@ -4,17 +4,19 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 /**
- * A wallpaper the user can pick. This is the extension point: implement it (a picture from a folder, a
- * slow animation, ...) and add one line to {@link Wallpapers#ALL}. The settings screen lists whatever
- * is registered there; nothing else needs to change.
+ * A wallpaper the user can pick. This is the extension point: implement it and add one line to
+ * {@link Wallpapers#ALL}. The gallery lists whatever is registered there; nothing else needs to change.
  */
 interface WallpaperSource {
     /** Stable name saved in the preferences. Never rename one that shipped. */
     String id();
 
-    /** String resource shown in the settings. */
+    /** String resource shown in the gallery. */
     int label();
 
-    /** Builds the drawable. Called on the main thread each time the home screen resumes: keep it cheap. */
+    /** True when the drawable is a SceneDrawable that can drift (the animated wallpaper option). */
+    boolean animatable();
+
+    /** Builds a fresh drawable. May be called off the main thread: it must not touch views. */
     Drawable load(Context context);
 }

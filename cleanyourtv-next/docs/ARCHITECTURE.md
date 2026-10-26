@@ -1,55 +1,62 @@
 # Architecture
 
-Plain Java on the Android framework. No AndroidX, no Kotlin, no layout XML: the three screens are built in code, so there is no resource to drift from the code and the APK carries no library.
+Plain Java on the Android framework. No AndroidX, no Kotlin, no layout XML: every screen is built in code, so there is no resource to drift from the code and the APK carries no library. One runtime permission (`INTERNET`), no service, no receiver, no native code (so 32-bit ARM, 64-bit ARM and x86 all run the same APK).
+
+## Screens
 
 ```
-com.cleanyourtv.launcher
-  HomeActivity       greeting, clock, date, dock. Intent filters: HOME and LEANBACK_LAUNCHER
-  LibraryActivity    every app, as rows of tiles in a ScrollView
-  SettingsActivity   a column of rows; each change is saved at once
-  LauncherApp        gives the icon cache back when the system asks for memory
-
-  TileView           icon over label, grows a little on focus (shared by dock and library)
-  ChoiceDialog       the dark list of choices (dock menu, confirmations, name entry)
-  Ui, Glyphs, Palette   small view helpers, two drawn icons, the fixed dark colours
-
-  AppRepository      lists launchable apps off the main thread, and launches them
-  IconCache          icons drawn once at display size, in a 6 MB bounded cache
-  Prefs              one SharedPreferences file
-
-  Pure logic, covered by JVM tests (no android.* import):
-  DockModel, DockDefaults, Greeting, ClockMode, Cycle, AppEntry, Accents, Palette
+HomeActivity          host: wallpaper, ambient light, three pages, tab bar, focus and Back rules
+  HomePage            clock, date, glass dock
+  CinemaPage          backdrop + rails of posters (TMDB)
+  WeatherPage         current weather + seven days (Open-Meteo)
+LibraryActivity       every installed app (opened from the dock)
+SettingsActivity      sections of rows; every change saved at once
+WallpaperActivity     gallery with live preview; picture from the device
+DetailActivity        one film or series
 ```
+
+Only the shown page is visible: the others are `GONE`, take no focus, and free their images.
+
+## Design system
+
+| Piece | What it is |
+|---|---|
+| `GlassDrawable` | Liquid Glass: a panel samples the frosted wallpaper at its own position, adds a tint brighter at the top and an edge lit from the top left. |
+| `Backdrop` | The frosted wallpaper: drawn once into 320x180, box-blurred once (`BoxBlur`), rebuilt only when the wallpaper or effects level changes. Never recomputed per frame, never a full-size blur. |
+| `AmbientGlow` | The light under the dock: one white radial gradient, tinted by a colour filter and stretched by the canvas. Moves, recolours and fades in 420 ms. |
+| `DominantColor` | The colour of an icon: the most vivid hue of a 24x24 copy, lifted to glow brightness; a grey icon gives the accent colour. |
+| `SceneDrawable` | A wallpaper made of soft radial lights over a dark gradient: no bitmap, sharp at any size. Animated only by moving the lights along a seamless loop. |
+| `WallpaperView` | Draws the wallpaper and two shades. Animates at about 15 fps, only while visible, and falls back to the still picture for good if the TV cannot keep up. |
+| Outfit font | Variable font, SIL OFL. Loaded once. |
+
+Two effect levels (`Effects`): **Quality** (frosted glass, optional animation, sharper posters) and **Performance** (flat glass, still wallpaper, 16-bit smaller posters).
+
+### Why glass is "sampled", not blurred live
+
+Android 9 has no cheap live background blur (`RenderEffect` is Android 12). Re-blurring the screen every frame would starve a 1 GB stick. Because the wallpaper is known, it is blurred once, and each glass panel paints the part of that copy that lies behind it. Panels that scroll use flat glass instead, since a sampled copy would show the wrong part once they moved.
 
 ## Remote navigation
 
-The D-pad uses Android's own focus search; no key code is intercepted except Back on Home (ignored) and Menu (same as holding OK).
+Focus uses Android's own search, with explicit rules where a mistake would lose it:
 
-- Dock: a horizontal row of focusable tiles. Left and Right move, OK opens, long OK edits.
-- Library and settings: vertical lists inside a `ScrollView`, which scrolls to follow the focus.
-- Every tile is `focusable` with a visible outline in the accent colour, so focus is never invisible.
+- **Tab bar**: Left and Right move over the tabs and the page follows; Down enters the page; Up does nothing.
+- **Dock**: Left and Right move, stopping at both ends; Up goes to the tab bar; Down does nothing (no app grid opens by surprise); OK opens; long OK or Menu edits.
+- **Rails**: Left and Right glide along the rail and stop at the ends; Up and Down change rail, Up on the first rail goes to the tab bar; OK opens the detail screen.
+- **Back**: from content to the tab bar, from another tab to Home, on Home nothing (`NavLogic`).
+- **Home key** while already on Home: back to the Home tab, on the first dock icon.
+- After an app closes, `onResume` gives the focus back if it is gone.
 
-## Memory (about 1 GB of RAM)
+## Network and memory (about 1 GB of RAM)
 
-- Wallpapers are gradients, not bitmaps. No blur, no video.
-- Icons are rendered at the size shown and cached under 6 MB; the cache halves when the UI is hidden and empties when the app goes to the background or memory is low.
-- The only timer is a 60 second tick for the greeting, and it runs only while Home is visible. No service, no receiver.
+- `ImageLoader`: 12 MB memory cache, 60 MB disk cache (oldest removed first), three low-priority threads. A view reused for another picture ignores late answers. Pictures fade in over a dim placeholder: never a white flash.
+- `RailWindow`: a rail of twenty posters holds bitmaps only for the first six and those near the focus.
+- `JsonCache`: TMDB six hours, weather 30 minutes; old data is shown and labelled when the network fails.
+- `LauncherApp.onTrimMemory`: empties the caches and the frosted copy when the system asks.
+- The only timer is a 60-second tick for the greeting, while Home is visible. No service.
 
 ## Extending
 
-- **A wallpaper**: implement `WallpaperSource` and add it to `Wallpapers.ALL`; add its name to both `strings.xml`. Settings lists it by itself.
-- **An accent colour**: one line in `Accents.ALL`, plus its name in both `strings.xml`.
-- **A language**: add `values-xx/strings.xml` with every name of `values/strings.xml` (a test enforces the match for French) and add `xx` to `resourceConfigurations` in `app/build.gradle`.
-
-## Weather: postponed
-
-Weather needs the network, and this launcher has **no `INTERNET` permission** by design (`ManifestPolicyTest` enforces it). It does not block version 0.1. Two ways to add it later:
-
-1. **A separate app** (as `addons/weather/` does with Open-Meteo, which needs no account or key), that this launcher would open from the dock. The launcher stays offline. Recommended.
-2. **An optional switch** in the launcher, off by default, that adds the permission. Android grants a manifest permission at install, so "disabled" would only mean the code does nothing: the permission would still be there. That is why option 1 is preferred.
-
-Whether Open-Meteo stays free and reliable is not verified here.
-
-## Not in this version
-
-Wallpaper from a picture or a USB drive (needs storage access), a weather widget, widget tiles on Home, and any change to how the Home button is handled (see `RECOVERY.md`).
+- **A wallpaper**: implement `WallpaperSource`, add it to `Wallpapers.ALL`, add its name to both `strings.xml`. The gallery lists it.
+- **An accent colour**: one line in `Accents.ALL` and its name in both `strings.xml`.
+- **A "Continue watching" source**: implement `ResumeSource` and add it to `ResumeRegistry` (see `PLAYBACK.md`).
+- **A language**: add `values-xx/strings.xml` with every name of `values/strings.xml` and add `xx` to `resourceConfigurations` in `app/build.gradle`.

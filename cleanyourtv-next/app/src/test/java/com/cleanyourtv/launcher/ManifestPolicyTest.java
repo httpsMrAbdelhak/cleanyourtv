@@ -45,10 +45,38 @@ public class ManifestPolicyTest {
         return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
     }
 
-    @Test public void asksForNoPermission() throws Exception {
+    @Test public void asksForInternetAndNothingElse() throws Exception {
         Document doc = manifest();
-        for (String tag : new String[] {"uses-permission", "uses-permission-sdk-23", "permission"}) {
+        NodeList permissions = doc.getElementsByTagName("uses-permission");
+        Set<String> asked = new HashSet<>();
+        for (int i = 0; i < permissions.getLength(); i++) {
+            asked.add(((Element) permissions.item(i)).getAttributeNS(ANDROID, "name"));
+        }
+        assertEquals("only the network, for TMDB and the weather",
+                java.util.Collections.singleton("android.permission.INTERNET"), asked);
+        for (String tag : new String[] {"uses-permission-sdk-23", "permission"}) {
             assertEquals(tag, 0, doc.getElementsByTagName(tag).getLength());
+        }
+    }
+
+    @Test public void networkIsHttpsOnly() throws Exception {
+        Element application = (Element) manifest().getElementsByTagName("application").item(0);
+        assertEquals("false", application.getAttributeNS(ANDROID, "usesCleartextTraffic"));
+        File sources = new File(module(), "src/main/java");
+        assertTrue(sources.isDirectory());
+        assertNoHttpUrl(sources);
+    }
+
+    private static void assertNoHttpUrl(File folder) throws Exception {
+        File[] files = folder.listFiles();
+        assertNotNull(files);
+        for (File file : files) {
+            if (file.isDirectory()) {
+                assertNoHttpUrl(file);
+            } else if (file.getName().endsWith(".java")) {
+                assertFalse(file.getName() + " names a plain http:// address",
+                        text(file).replace("https://", "").contains("http://"));
+            }
         }
     }
 
@@ -63,7 +91,9 @@ public class ManifestPolicyTest {
         assertFalse(raw.contains("BIND_ACCESSIBILITY_SERVICE"));
         assertFalse(raw.contains("WRITE_SECURE_SETTINGS"));
         assertFalse(raw.contains("QUERY_ALL_PACKAGES"));
-        assertFalse(raw.contains("INTERNET"));
+        assertFalse(raw.contains("READ_EPG_DATA"));
+        assertFalse(raw.contains("READ_EXTERNAL_STORAGE"));
+        assertFalse(raw.contains("ACCESS_FINE_LOCATION"));
     }
 
     @Test public void homeActivityIsAHomeCandidateAndListedInTheAppRow() throws Exception {
@@ -95,6 +125,10 @@ public class ManifestPolicyTest {
             }
         }
         assertEquals(java.util.Collections.singleton(".HomeActivity"), exported);
+        // WallpaperActivity and DetailActivity are internal screens too, and must be declared.
+        String raw = text(new File(module(), "src/main/AndroidManifest.xml"));
+        assertTrue(raw.contains(".WallpaperActivity"));
+        assertTrue(raw.contains(".DetailActivity"));
     }
 
     @Test public void tvIsDeclaredWithoutRequiringATouchscreen() throws Exception {

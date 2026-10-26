@@ -1,63 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CleanYourTV</string>
-
     <string name="greeting_morning">Good morning</string>
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
-
+    <string name="tab_home">Home</string>
+    <string name="tab_cinema">Cinema</string>
+    <string name="tab_weather">Weather</string>
     <string name="dock_all_apps">All apps</string>
-    <string name="dock_settings">Settings</string>
-    <string name="dock_hint">Hold OK on an app to edit the dock</string>
-
     <string name="library_title">Apps</string>
     <string name="library_empty">No apps found</string>
-
     <string name="menu_add_dock">Add to dock</string>
     <string name="menu_remove_dock">Remove from dock</string>
     <string name="menu_move_left">Move left</string>
     <string name="menu_move_right">Move right</string>
-
     <string name="toast_dock_full">The dock is full (%1$d apps)</string>
     <string name="toast_added">Added to the dock</string>
     <string name="toast_removed">Removed from the dock</string>
     <string name="toast_launch_failed">This app cannot be opened</string>
-
+    <string name="toast_animation_off">The animation was too slow for this TV and is now off.</string>
+    <string name="toast_dock_reset">Dock reset</string>
+    <string name="rail_trending">Trending this week</string>
+    <string name="rail_movies">Popular movies</string>
+    <string name="rail_series">Popular series</string>
+    <string name="rail_new">New in theatres</string>
+    <string name="kind_movie">Movie</string>
+    <string name="kind_series">Series</string>
+    <string name="tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
+    <string name="tmdb_stale">Offline: data from %1$s</string>
+    <string name="cinema_no_key">Add a TMDB key in Settings to see trending films and series. Nothing is shown without one.</string>
+    <string name="cinema_bad_key">TMDB refused the key. Check it in Settings.</string>
+    <string name="cinema_offline">No network connection, and no saved data to show.</string>
+    <string name="cinema_failed">TMDB did not answer correctly. Try again in a moment.</string>
+    <string name="action_open_settings">Open Settings</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_back">Back</string>
+    <string name="detail_no_overview">No synopsis available.</string>
+    <string name="detail_no_playback">Playback is not available here: TMDB describes films and series but gives no link to watch them. Open your streaming app to watch.</string>
+    <string name="weather_no_city">Choose a city in Settings to see the weather. The location of the device is never used.</string>
+    <string name="weather_loading">Loading the weather…</string>
+    <string name="weather_offline">No network connection, and no saved forecast to show.</string>
+    <string name="weather_failed">The weather service did not answer correctly. Try again in a moment.</string>
+    <string name="weather_range">High %1$s  ·  Low %2$s</string>
+    <string name="weather_today">Today</string>
+    <string name="weather_updated">Updated %1$s</string>
+    <string name="weather_stale">offline, old data</string>
+    <string name="weather_attribution">Weather data by Open-Meteo.com (CC BY 4.0)</string>
+    <string name="wx_clear">Clear</string>
+    <string name="wx_partly">Partly cloudy</string>
+    <string name="wx_cloudy">Cloudy</string>
+    <string name="wx_fog">Fog</string>
+    <string name="wx_drizzle">Drizzle</string>
+    <string name="wx_rain">Rain</string>
+    <string name="wx_snow">Snow</string>
+    <string name="wx_showers">Showers</string>
+    <string name="wx_storm">Thunderstorm</string>
     <string name="settings_title">Settings</string>
-    <string name="settings_accent">Accent colour</string>
+    <string name="section_look">Look</string>
+    <string name="section_dock">Dock</string>
+    <string name="section_weather">Weather</string>
+    <string name="section_cinema">Cinema</string>
+    <string name="section_status">Integrations</string>
+    <string name="section_about">About</string>
     <string name="settings_wallpaper">Wallpaper</string>
+    <string name="settings_effects">Effects level</string>
+    <string name="effects_quality">Quality</string>
+    <string name="effects_performance">Performance</string>
+    <string name="settings_effects_hint">Quality: frosted glass and an optional animated wallpaper. Performance: flat glass, still wallpaper, smaller posters.</string>
+    <string name="settings_animated">Animated wallpaper</string>
+    <string name="value_unavailable">Unavailable</string>
+    <string name="animated_needs_quality">Animated wallpapers need the Quality effects level.</string>
+    <string name="animated_needs_scene">Animation works with the built-in wallpapers, not with a picture.</string>
+    <string name="settings_accent">Accent colour</string>
     <string name="settings_clock">Clock format</string>
     <string name="settings_name">Name in the greeting</string>
-    <string name="settings_name_none">None</string>
+    <string name="settings_none">None</string>
     <string name="settings_nontv">Show apps not made for TV</string>
     <string name="settings_reset_dock">Reset the dock</string>
     <string name="settings_reset_confirm">Restore the default dock</string>
-    <string name="settings_home">Home screen of the system</string>
-    <string name="settings_home_open">Open</string>
-    <string name="settings_home_failed">This TV has no home screen setting. Use Settings, then Apps.</string>
-    <string name="settings_version">CleanYourTV %1$s</string>
-
+    <string name="settings_dock_hint">Hold OK on an app in the dock to move or remove it.</string>
+    <string name="settings_city">Weather city</string>
+    <string name="settings_city_search">Search a city</string>
+    <string name="city_searching">Searching…</string>
+    <string name="city_none">No city found</string>
+    <string name="city_search_failed">The search failed. Check the network.</string>
+    <string name="settings_tmdb_key">TMDB key</string>
+    <string name="key_set">Set</string>
+    <string name="key_built_in">Built into this app</string>
+    <string name="settings_tmdb_hint">A free key from themoviedb.org (Settings, API). Both the short key and the long token starting with eyJ work.</string>
+    <string name="status_tmdb">TMDB (cinema)</string>
+    <string name="status_weather">Weather (Open-Meteo)</string>
+    <string name="status_resume">Continue watching</string>
+    <string name="status_resume_off">Not available</string>
+    <string name="status_resume_on">Available</string>
+    <string name="status_resume_hint">Android gives a home screen no way to read what other apps are playing, so no such section is shown. Nothing is simulated.</string>
+    <string name="status_ok">Working, updated %1$s</string>
+    <string name="status_stale">Offline, showing data from %1$s</string>
+    <string name="status_no_key">No key set</string>
+    <string name="status_bad_key">Key refused</string>
+    <string name="status_no_city">No city chosen</string>
+    <string name="status_offline">No network</string>
+    <string name="status_failed">Error</string>
+    <string name="status_never">Not used yet</string>
+    <string name="settings_version">Version</string>
+    <string name="about_credits">Cinema data: TMDB. Weather: Open-Meteo.com (CC BY 4.0). Font: Outfit (SIL Open Font License).</string>
     <string name="value_on">On</string>
     <string name="value_off">Off</string>
-
     <string name="clock_system">System</string>
     <string name="clock_24">24 hours</string>
     <string name="clock_12">12 hours</string>
-
     <string name="accent_blue">Blue</string>
     <string name="accent_violet">Violet</string>
     <string name="accent_green">Green</string>
     <string name="accent_orange">Orange</string>
     <string name="accent_pink">Pink</string>
     <string name="accent_white">White</string>
-
+    <string name="wallpaper_nebula">Nebula</string>
     <string name="wallpaper_aurora">Aurora</string>
-    <string name="wallpaper_midnight">Midnight</string>
-    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_ember">Ember</string>
+    <string name="wallpaper_ocean">Ocean</string>
     <string name="wallpaper_dusk">Dusk</string>
-    <string name="wallpaper_forest">Forest</string>
-
+    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_custom">Picture from the device</string>
+    <string name="wallpaper_hint">Move over a card to preview it. OK applies it.</string>
+    <string name="wallpaper_applied">Applied</string>
+    <string name="wallpaper_saving">Saving the picture…</string>
+    <string name="wallpaper_no_picker">This TV has no file picker, so a picture cannot be chosen.</string>
+    <string name="wallpaper_pick_failed">The picture could not be read.</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_name_hint">Your first name</string>
 </resources>

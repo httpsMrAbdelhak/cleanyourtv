@@ -87,9 +87,19 @@ public class SmallLogicTest {
         assertEquals("dusk", Wallpapers.byId("dusk").id());
     }
 
-    @Test public void everyGradientHasAtLeastTwoColours() {
+    @Test public void everySceneHasLightsAndADarkBase() {
         for (WallpaperSource source : Wallpapers.ALL) {
-            assertTrue(source.id(), ((GradientWallpaper) source).colors().length >= 2);
+            SceneSpec spec = ((SceneWallpaper) source).spec();
+            assertTrue(source.id(), spec.blobs.length >= 2);
+            assertTrue(source.id() + " base must stay dark", brightness(spec.top) < 40 && brightness(spec.bottom) < 40);
+            for (SceneSpec.Blob blob : spec.blobs) {
+                assertTrue(source.id(), blob.speedX >= 1 && blob.speedY >= 1);
+                assertTrue(source.id(), blob.radius > 0.1f && blob.squash > 0.1f);
+            }
         }
+    }
+
+    private static int brightness(int argb) {
+        return (((argb >> 16) & 0xFF) + ((argb >> 8) & 0xFF) + (argb & 0xFF)) / 3;
     }
 }

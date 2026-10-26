@@ -1,63 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CleanYourTV</string>
-
     <string name="greeting_morning">Bonjour</string>
     <string name="greeting_afternoon">Bon après-midi</string>
     <string name="greeting_evening">Bonsoir</string>
-
+    <string name="tab_home">Accueil</string>
+    <string name="tab_cinema">Cinéma</string>
+    <string name="tab_weather">Météo</string>
     <string name="dock_all_apps">Toutes les apps</string>
-    <string name="dock_settings">Réglages</string>
-    <string name="dock_hint">Maintenez OK sur une app pour modifier le dock</string>
-
     <string name="library_title">Applications</string>
     <string name="library_empty">Aucune application trouvée</string>
-
     <string name="menu_add_dock">Ajouter au dock</string>
     <string name="menu_remove_dock">Retirer du dock</string>
     <string name="menu_move_left">Déplacer à gauche</string>
     <string name="menu_move_right">Déplacer à droite</string>
-
     <string name="toast_dock_full">Le dock est plein (%1$d apps)</string>
     <string name="toast_added">Ajoutée au dock</string>
     <string name="toast_removed">Retirée du dock</string>
     <string name="toast_launch_failed">Impossible d\'ouvrir cette application</string>
-
+    <string name="toast_animation_off">L\'animation était trop lente pour cette TV : elle est désactivée.</string>
+    <string name="toast_dock_reset">Dock réinitialisé</string>
+    <string name="rail_trending">Tendances de la semaine</string>
+    <string name="rail_movies">Films populaires</string>
+    <string name="rail_series">Séries populaires</string>
+    <string name="rail_new">Nouveautés au cinéma</string>
+    <string name="kind_movie">Film</string>
+    <string name="kind_series">Série</string>
+    <string name="tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
+    <string name="tmdb_stale">Hors ligne : données du %1$s</string>
+    <string name="cinema_no_key">Ajoutez une clé TMDB dans les Réglages pour voir les films et séries tendance. Rien n\'est affiché sans clé.</string>
+    <string name="cinema_bad_key">TMDB a refusé la clé. Vérifiez-la dans les Réglages.</string>
+    <string name="cinema_offline">Pas de connexion réseau, et aucune donnée enregistrée à afficher.</string>
+    <string name="cinema_failed">TMDB n\'a pas répondu correctement. Réessayez dans un instant.</string>
+    <string name="action_open_settings">Ouvrir les réglages</string>
+    <string name="action_retry">Réessayer</string>
+    <string name="action_back">Retour</string>
+    <string name="detail_no_overview">Aucun synopsis disponible.</string>
+    <string name="detail_no_playback">Lecture indisponible ici : TMDB décrit les films et séries mais ne fournit aucun lien pour les regarder. Ouvrez votre application de streaming.</string>
+    <string name="weather_no_city">Choisissez une ville dans les Réglages pour voir la météo. La position de l\'appareil n\'est jamais utilisée.</string>
+    <string name="weather_loading">Chargement de la météo…</string>
+    <string name="weather_offline">Pas de connexion réseau, et aucune prévision enregistrée à afficher.</string>
+    <string name="weather_failed">Le service météo n\'a pas répondu correctement. Réessayez dans un instant.</string>
+    <string name="weather_range">Max %1$s  ·  Min %2$s</string>
+    <string name="weather_today">Aujourd\'hui</string>
+    <string name="weather_updated">Mis à jour à %1$s</string>
+    <string name="weather_stale">hors ligne, données anciennes</string>
+    <string name="weather_attribution">Données météo par Open-Meteo.com (CC BY 4.0)</string>
+    <string name="wx_clear">Dégagé</string>
+    <string name="wx_partly">Éclaircies</string>
+    <string name="wx_cloudy">Nuageux</string>
+    <string name="wx_fog">Brouillard</string>
+    <string name="wx_drizzle">Bruine</string>
+    <string name="wx_rain">Pluie</string>
+    <string name="wx_snow">Neige</string>
+    <string name="wx_showers">Averses</string>
+    <string name="wx_storm">Orage</string>
     <string name="settings_title">Réglages</string>
-    <string name="settings_accent">Couleur d\'accent</string>
+    <string name="section_look">Apparence</string>
+    <string name="section_dock">Dock</string>
+    <string name="section_weather">Météo</string>
+    <string name="section_cinema">Cinéma</string>
+    <string name="section_status">Intégrations</string>
+    <string name="section_about">À propos</string>
     <string name="settings_wallpaper">Fond d\'écran</string>
+    <string name="settings_effects">Niveau d\'effets</string>
+    <string name="effects_quality">Qualité</string>
+    <string name="effects_performance">Performance</string>
+    <string name="settings_effects_hint">Qualité : verre dépoli et fond animé en option. Performance : verre plat, fond fixe, affiches plus petites.</string>
+    <string name="settings_animated">Fond animé</string>
+    <string name="value_unavailable">Indisponible</string>
+    <string name="animated_needs_quality">Les fonds animés demandent le niveau d\'effets Qualité.</string>
+    <string name="animated_needs_scene">L\'animation fonctionne avec les fonds intégrés, pas avec une image.</string>
+    <string name="settings_accent">Couleur d\'accent</string>
     <string name="settings_clock">Format de l\'heure</string>
     <string name="settings_name">Prénom dans l\'accueil</string>
-    <string name="settings_name_none">Aucun</string>
+    <string name="settings_none">Aucun</string>
     <string name="settings_nontv">Afficher les apps non conçues pour la TV</string>
     <string name="settings_reset_dock">Réinitialiser le dock</string>
     <string name="settings_reset_confirm">Rétablir le dock par défaut</string>
-    <string name="settings_home">Écran d\'accueil du système</string>
-    <string name="settings_home_open">Ouvrir</string>
-    <string name="settings_home_failed">Cette TV n\'a pas de réglage d\'écran d\'accueil. Utilisez Paramètres, puis Applications.</string>
-    <string name="settings_version">CleanYourTV %1$s</string>
-
+    <string name="settings_dock_hint">Maintenez OK sur une app du dock pour la déplacer ou la retirer.</string>
+    <string name="settings_city">Ville de la météo</string>
+    <string name="settings_city_search">Rechercher une ville</string>
+    <string name="city_searching">Recherche…</string>
+    <string name="city_none">Aucune ville trouvée</string>
+    <string name="city_search_failed">La recherche a échoué. Vérifiez le réseau.</string>
+    <string name="settings_tmdb_key">Clé TMDB</string>
+    <string name="key_set">Définie</string>
+    <string name="key_built_in">Intégrée à l\'app</string>
+    <string name="settings_tmdb_hint">Une clé gratuite de themoviedb.org (Paramètres, API). La clé courte et le long jeton commençant par eyJ fonctionnent.</string>
+    <string name="status_tmdb">TMDB (cinéma)</string>
+    <string name="status_weather">Météo (Open-Meteo)</string>
+    <string name="status_resume">Reprise de lecture</string>
+    <string name="status_resume_off">Non disponible</string>
+    <string name="status_resume_on">Disponible</string>
+    <string name="status_resume_hint">Android ne permet pas à un écran d\'accueil de lire ce que d\'autres applications lisent : aucune section de ce type n\'est affichée. Rien n\'est simulé.</string>
+    <string name="status_ok">Fonctionne, mis à jour %1$s</string>
+    <string name="status_stale">Hors ligne, données du %1$s</string>
+    <string name="status_no_key">Aucune clé</string>
+    <string name="status_bad_key">Clé refusée</string>
+    <string name="status_no_city">Aucune ville choisie</string>
+    <string name="status_offline">Pas de réseau</string>
+    <string name="status_failed">Erreur</string>
+    <string name="status_never">Pas encore utilisé</string>
+    <string name="settings_version">Version</string>
+    <string name="about_credits">Données cinéma : TMDB. Météo : Open-Meteo.com (CC BY 4.0). Police : Outfit (SIL Open Font License).</string>
     <string name="value_on">Activé</string>
     <string name="value_off">Désactivé</string>
-
     <string name="clock_system">Système</string>
     <string name="clock_24">24 heures</string>
     <string name="clock_12">12 heures</string>
-
     <string name="accent_blue">Bleu</string>
     <string name="accent_violet">Violet</string>
     <string name="accent_green">Vert</string>
     <string name="accent_orange">Orange</string>
     <string name="accent_pink">Rose</string>
     <string name="accent_white">Blanc</string>
-
+    <string name="wallpaper_nebula">Nébuleuse</string>
     <string name="wallpaper_aurora">Aurore</string>
-    <string name="wallpaper_midnight">Minuit</string>
-    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_ember">Braise</string>
+    <string name="wallpaper_ocean">Océan</string>
     <string name="wallpaper_dusk">Crépuscule</string>
-    <string name="wallpaper_forest">Forêt</string>
-
+    <string name="wallpaper_graphite">Graphite</string>
+    <string name="wallpaper_custom">Image de l\'appareil</string>
+    <string name="wallpaper_hint">Survolez une carte pour l\'aperçu. OK l\'applique.</string>
+    <string name="wallpaper_applied">Appliqué</string>
+    <string name="wallpaper_saving">Enregistrement de l\'image…</string>
+    <string name="wallpaper_no_picker">Cette TV n\'a pas de sélecteur de fichiers : impossible de choisir une image.</string>
+    <string name="wallpaper_pick_failed">Impossible de lire l\'image.</string>
     <string name="dialog_save">Enregistrer</string>
     <string name="dialog_cancel">Annuler</string>
-    <string name="dialog_name_hint">Votre prénom</string>
 </resources>

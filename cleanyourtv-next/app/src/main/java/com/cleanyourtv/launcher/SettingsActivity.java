@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -18,10 +18,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * The settings: a column of rows. OK or Right steps a row to its next value, Left to the previous one.
- * Every change is saved at once and the wallpaper behind the screen follows, so there is no Save button.
- * Nothing here touches the system: the "home screen" row only opens Android's own settings page.
+ * The settings, in sections: look, dock, weather, cinema, and the state of each integration. A row steps to
+ * its next value with OK or Right (Left goes back); rows that need typing or a choice open a dialog. Every
+ * change is saved at once. A setting that cannot work says so on its row instead of pretending.
  */
 public final class SettingsActivity extends Activity {
     private interface Value { String get(); }
@@ -30,137 +35,169 @@ public final class SettingsActivity extends Activity {
 
     private Prefs prefs;
     private LinearLayout rows;
-    private int accent;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = new Prefs(this);
-        accent = prefs.accent().color;
-        getWindow().setBackgroundDrawable(prefs.wallpaper().load(this));
+        getWindow().setBackgroundDrawable(Wallpaper.load(this, prefs));
 
         int margin = Ui.dp(this, 48);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(margin, margin, margin, 0);
+        page.setBackgroundColor(0x80000000);
 
-        TextView title = Ui.text(this, 34, Palette.TEXT, Ui.light());
+        TextView title = Ui.text(this, 36, Palette.TEXT, Ui.light(this));
         title.setText(R.string.settings_title);
         page.addView(title);
 
         ScrollView scroll = new ScrollView(this);
         scroll.setVerticalScrollBarEnabled(false);
         scroll.setClipToPadding(false);
-        scroll.setPadding(0, Ui.dp(this, 16), 0, Ui.dp(this, 32));
+        scroll.setPadding(0, Ui.dp(this, 12), 0, Ui.dp(this, 40));
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.VERTICAL);
         TileView.allowOverflow(rows);
         scroll.addView(rows, new FrameLayout.LayoutParams(
-                Ui.dp(this, 760), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
+                Ui.dp(this, 820), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
         page.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(page);
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refresh();
+    }
+
+    /** Rebuilds the rows: the wallpaper screen or a dialog may have changed what they show. */
+    private void refresh() {
+        View focused = getCurrentFocus();
+        int index = focused == null ? 0 : rows.indexOfChild(focused);
+        rows.removeAllViews();
         buildRows();
+        View target = rows.getChildAt(Math.max(0, Math.min(index, rows.getChildCount() - 1)));
+        if (target != null && target.isFocusable()) target.requestFocus();
+        else firstFocusable();
+    }
+
+    private void firstFocusable() {
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            if (rows.getChildAt(i).isFocusable()) {
+                rows.getChildAt(i).requestFocus();
+                return;
+            }
+        }
     }
 
     private void buildRows() {
-        addRow(R.string.settings_accent,
-                () -> getString(prefs.accent().label),
+        section(R.string.section_look);
+
+        View wallpaperRow = addRow(R.string.settings_wallpaper, () -> wallpaperName(), null);
+        wallpaperRow.setOnClickListener(v -> startActivity(new Intent(this, WallpaperActivity.class)));
+
+        addRow(R.string.settings_effects, () -> getString(prefs.effects() == Effects.QUALITY
+                ? R.string.effects_quality : R.string.effects_performance),
+                direction -> {
+                    prefs.setEffects(prefs.effects() == Effects.QUALITY ? Effects.PERFORMANCE : Effects.QUALITY);
+                    if (!prefs.effects().allowsAnimatedWallpaper()) prefs.setAnimatedWallpaper(false);
+                });
+        addRow(R.string.settings_effects_hint, null, null).setFocusable(false);
+
+        addRow(R.string.settings_animated, () -> animatedValue(),
+                direction -> {
+                    if (!prefs.effects().allowsAnimatedWallpaper()) {
+                        Toast.makeText(this, R.string.animated_needs_quality, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (Wallpapers.CUSTOM.equals(prefs.wallpaperId())) {
+                        Toast.makeText(this, R.string.animated_needs_scene, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    prefs.setAnimatedWallpaper(!prefs.animatedWallpaper());
+                });
+
+        addRow(R.string.settings_accent, () -> getString(prefs.accent().label),
                 direction -> {
                     int next = Cycle.wrap(Accents.indexOf(prefs.accent().id), Accents.ALL.length, direction);
                     prefs.setAccent(Accents.ALL[next].id);
-                    // The focus outlines were built with the old colour: rebuild the screen with the new one.
-                    recreate();
                 });
 
-        addRow(R.string.settings_wallpaper,
-                () -> getString(prefs.wallpaper().label()),
-                direction -> {
-                    int next = Cycle.wrap(Wallpapers.indexOf(prefs.wallpaper().id()), Wallpapers.ALL.length, direction);
-                    prefs.setWallpaper(Wallpapers.ALL[next].id());
-                    getWindow().setBackgroundDrawable(prefs.wallpaper().load(this));
-                });
-
-        addRow(R.string.settings_clock,
-                () -> getString(clockLabel(prefs.clockMode())),
+        addRow(R.string.settings_clock, () -> getString(clockLabel(prefs.clockMode())),
                 direction -> {
                     ClockMode[] modes = ClockMode.values();
                     prefs.setClockMode(modes[Cycle.wrap(prefs.clockMode().ordinal(), modes.length, direction)]);
                 });
 
-        addRow(R.string.settings_nontv,
-                () -> getString(prefs.includeNonTvApps() ? R.string.value_on : R.string.value_off),
+        View nameRow = addRow(R.string.settings_name,
+                () -> prefs.name().isEmpty() ? getString(R.string.settings_none) : prefs.name(), null);
+        nameRow.setOnClickListener(v -> editText(R.string.settings_name, prefs.name(), false, text -> prefs.setName(text)));
+
+        section(R.string.section_dock);
+        addRow(R.string.settings_nontv, () -> getString(prefs.includeNonTvApps() ? R.string.value_on : R.string.value_off),
                 direction -> prefs.setIncludeNonTvApps(!prefs.includeNonTvApps()));
+        View resetRow = addRow(R.string.settings_reset_dock, () -> "", null);
+        resetRow.setOnClickListener(v -> new ChoiceDialog(this, getString(R.string.settings_reset_dock))
+                .option(getString(R.string.settings_reset_confirm), this::resetDock)
+                .option(getString(R.string.dialog_cancel), () -> { })
+                .show());
+        addRow(R.string.settings_dock_hint, null, null).setFocusable(false);
 
-        TextView name = addRow(R.string.settings_name,
-                () -> prefs.name().isEmpty() ? getString(R.string.settings_name_none) : prefs.name(),
-                null);
-        ((View) name.getParent()).setOnClickListener(view -> editName(name));
+        section(R.string.section_weather);
+        View cityRow = addRow(R.string.settings_city,
+                () -> prefs.hasCity() ? prefs.cityName() : getString(R.string.settings_none), null);
+        cityRow.setOnClickListener(v -> editText(R.string.settings_city_search, "", false, this::searchCity));
 
-        TextView reset = addRow(R.string.settings_reset_dock, () -> "", null);
-        ((View) reset.getParent()).setOnClickListener(view ->
-                new ChoiceDialog(this, getString(R.string.settings_reset_dock))
-                        .option(getString(R.string.settings_reset_confirm), () -> {
-                            AppRepository.loadAsync(this, true, apps -> {
-                                java.util.Set<String> installed = new java.util.HashSet<>();
-                                for (AppEntry app : apps) installed.add(app.packageName);
-                                prefs.saveDock(DockDefaults.pick(installed));
-                            });
-                        })
-                        .option(getString(R.string.dialog_cancel), () -> { })
-                        .show());
+        section(R.string.section_cinema);
+        View keyRow = addRow(R.string.settings_tmdb_key, () -> keyValue(), null);
+        keyRow.setOnClickListener(v -> editText(R.string.settings_tmdb_key, prefs.tmdbKey(), true, text -> prefs.setTmdbKey(text)));
+        addRow(R.string.settings_tmdb_hint, null, null).setFocusable(false);
 
-        TextView home = addRow(R.string.settings_home, () -> getString(R.string.settings_home_open), null);
-        ((View) home.getParent()).setOnClickListener(view -> openHomeSettings());
+        section(R.string.section_status);
+        addRow(R.string.status_tmdb, () -> statusText(prefs.status("tmdb")), null);
+        addRow(R.string.status_weather, () -> statusText(prefs.status("weather")), null);
+        addRow(R.string.status_resume, () -> getString(ResumeRegistry.available()
+                ? R.string.status_resume_on : R.string.status_resume_off), null);
+        addRow(R.string.status_resume_hint, null, null).setFocusable(false);
 
-        TextView version = Ui.text(this, 14, Palette.TEXT_DIM, null);
-        version.setText(getString(R.string.settings_version, versionName()));
-        version.setPadding(Ui.dp(this, 18), Ui.dp(this, 20), 0, 0);
-        rows.addView(version);
-
-        rows.getChildAt(0).requestFocus();
+        section(R.string.section_about);
+        addRow(R.string.settings_version, () -> versionName(), null);
+        addRow(R.string.about_credits, null, null).setFocusable(false);
     }
 
-    /** One row; returns its value view. step is null for rows that act on OK only. */
-    private TextView addRow(int label, final Value value, final Step step) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setFocusable(true);
-        row.setClickable(true);
-        row.setDefaultFocusHighlightEnabled(false);
-        int padX = Ui.dp(this, 20);
-        int padY = Ui.dp(this, 16);
-        row.setPadding(padX, padY, padX, padY);
-        row.setBackground(Ui.focusable(this, Palette.TILE, Palette.TILE_FOCUSED, accent, Ui.dp(this, 16)));
+    // --- values -----------------------------------------------------------------------------------------
 
-        TextView name = Ui.text(this, 20, Palette.TEXT, null);
-        name.setText(label);
-        row.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+    private String wallpaperName() {
+        if (Wallpapers.CUSTOM.equals(prefs.wallpaperId())) return getString(R.string.wallpaper_custom);
+        return getString(Wallpapers.byId(prefs.wallpaperId()).label());
+    }
 
-        final TextView shown = Ui.text(this, 20, accent, null);
-        shown.setText(value.get());
-        row.addView(shown);
+    private String animatedValue() {
+        if (!prefs.effects().allowsAnimatedWallpaper()) return getString(R.string.value_unavailable);
+        return getString(prefs.animatedWallpaper() ? R.string.value_on : R.string.value_off);
+    }
 
-        if (step != null) {
-            row.setOnClickListener(view -> {
-                step.apply(1);
-                shown.setText(value.get());
-            });
-            row.setOnKeyListener((view, keyCode, event) -> {
-                if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-                if (keyCode != KeyEvent.KEYCODE_DPAD_LEFT && keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
-                step.apply(keyCode == KeyEvent.KEYCODE_DPAD_LEFT ? -1 : 1);
-                shown.setText(value.get());
-                return true;
-            });
+    private String keyValue() {
+        if (!prefs.tmdbKey().isEmpty()) return getString(R.string.key_set);
+        if (!BuildConfig.TMDB_KEY.isEmpty()) return getString(R.string.key_built_in);
+        return getString(R.string.settings_none);
+    }
+
+    private String statusText(String code) {
+        Status.Parsed status = Status.parse(code);
+        String when = status.time > 0
+                ? DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(status.time)) : "";
+        switch (status.kind) {
+            case OK: return getString(R.string.status_ok, when);
+            case STALE: return getString(R.string.status_stale, when);
+            case NO_KEY: return getString(R.string.status_no_key);
+            case BAD_KEY: return getString(R.string.status_bad_key);
+            case NO_CITY: return getString(R.string.status_no_city);
+            case OFFLINE: return getString(R.string.status_offline);
+            case FAILED: return getString(R.string.status_failed);
+            default: return getString(R.string.status_never);
         }
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.topMargin = Ui.dp(this, 8);
-        rows.addView(row, params);
-        return shown;
     }
 
     private static int clockLabel(ClockMode mode) {
@@ -171,19 +208,95 @@ public final class SettingsActivity extends Activity {
         }
     }
 
-    private void editName(final TextView shown) {
+    private String versionName() {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
+
+    // --- rows -------------------------------------------------------------------------------------------
+
+    private void section(int title) {
+        TextView view = Ui.text(this, 16, Palette.TEXT_FAINT, Ui.medium(this));
+        view.setText(getString(title).toUpperCase(java.util.Locale.getDefault()));
+        view.setLetterSpacing(0.12f);
+        view.setPadding(Ui.dp(this, 6), Ui.dp(this, 26), 0, Ui.dp(this, 4));
+        rows.addView(view);
+    }
+
+    /**
+     * One row. value and step may be null: a row with neither is a note (and the caller turns its focus off).
+     * Returns the row view so the caller can set an OK action.
+     */
+    private View addRow(int label, final Value value, final Step step) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setFocusable(true);
+        row.setClickable(true);
+        row.setDefaultFocusHighlightEnabled(false);
+        int padX = Ui.dp(this, 22);
+        int padY = Ui.dp(this, 15);
+        row.setPadding(padX, padY, padX, padY);
+        row.setBackground(Ui.focusGlass(this, Palette.TILE, Palette.TILE_FOCUSED, Ui.dp(this, 18)));
+
+        boolean note = value == null && step == null;
+        TextView name = Ui.text(this, note ? 15 : 20, note ? Palette.TEXT_DIM : Palette.TEXT, Ui.regular(this));
+        name.setText(label);
+        row.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        if (note) row.setBackground(null);
+
+        if (value != null) {
+            final TextView shown = Ui.text(this, 20, prefs.accent().color, Ui.medium(this));
+            shown.setText(value.get());
+            shown.setGravity(Gravity.END);
+            row.addView(shown, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            if (step != null) {
+                row.setOnClickListener(view -> {
+                    step.apply(1);
+                    shown.setText(value.get());
+                    if (label == R.string.settings_accent || label == R.string.settings_effects) recreate();
+                });
+                row.setOnKeyListener((view, keyCode, event) -> {
+                    if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+                    if (keyCode != KeyEvent.KEYCODE_DPAD_LEFT && keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
+                    step.apply(keyCode == KeyEvent.KEYCODE_DPAD_LEFT ? -1 : 1);
+                    shown.setText(value.get());
+                    if (label == R.string.settings_accent || label == R.string.settings_effects) recreate();
+                    return true;
+                });
+            }
+        }
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = Ui.dp(this, note ? 2 : 8);
+        rows.addView(row, params);
+        return row;
+    }
+
+    // --- actions ----------------------------------------------------------------------------------------
+
+    private interface Text { void accept(String text); }
+
+    private void editText(int title, String initial, boolean sensitive, final Text onSave) {
         final EditText input = new EditText(this);
         input.setSingleLine(true);
-        input.setText(prefs.name());
+        input.setText(initial);
         input.setSelection(input.getText().length());
-        input.setHint(R.string.dialog_name_hint);
         input.setTextColor(Palette.TEXT);
         input.setHintTextColor(Palette.TEXT_DIM);
+        input.setTextSize(20);
+        input.setTypeface(Ui.regular(this));
         input.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        final ChoiceDialog dialog = new ChoiceDialog(this, getString(R.string.settings_name));
+        if (sensitive) input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        final ChoiceDialog dialog = new ChoiceDialog(this, getString(title));
         final Runnable save = () -> {
-            prefs.setName(input.getText().toString());
-            shown.setText(prefs.name().isEmpty() ? getString(R.string.settings_name_none) : prefs.name());
+            onSave.accept(input.getText().toString().trim());
+            refresh();
         };
         input.setOnEditorActionListener((view, actionId, event) -> {
             save.run();
@@ -196,21 +309,37 @@ public final class SettingsActivity extends Activity {
                 .show();
     }
 
-    /** Opens Android's own "home screen" settings page, where the default launcher can be changed back. */
-    private void openHomeSettings() {
-        try {
-            startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));
-        } catch (RuntimeException e) {
-            Toast.makeText(this, R.string.settings_home_failed, Toast.LENGTH_LONG).show();
-        }
+    private void searchCity(final String name) {
+        if (name.isEmpty()) return;
+        Toast.makeText(this, R.string.city_searching, Toast.LENGTH_SHORT).show();
+        Weather.search(name, (places, failed) -> {
+            if (isDestroyed()) return;
+            if (failed) {
+                Toast.makeText(this, R.string.city_search_failed, Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (places.isEmpty()) {
+                Toast.makeText(this, R.string.city_none, Toast.LENGTH_LONG).show();
+                return;
+            }
+            ChoiceDialog dialog = new ChoiceDialog(this, getString(R.string.settings_city));
+            for (final GeoParser.Place place : places) {
+                dialog.option(place.label(), () -> {
+                    prefs.setCity(place.name, place.latitude, place.longitude);
+                    refresh();
+                });
+            }
+            dialog.option(getString(R.string.dialog_cancel), () -> { });
+            dialog.show();
+        });
     }
 
-    private String versionName() {
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-            return info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "";
-        }
+    private void resetDock() {
+        AppRepository.loadAsync(this, true, apps -> {
+            Set<String> installed = new HashSet<>();
+            for (AppEntry app : apps) installed.add(app.packageName);
+            prefs.saveDock(DockDefaults.pick(installed));
+            Toast.makeText(this, R.string.toast_dock_reset, Toast.LENGTH_SHORT).show();
+        });
     }
 }

@@ -5,8 +5,9 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
-    <!-- No <uses-permission> at all, on purpose: no network, no storage, no location, no secure settings,
-         no accessibility service. tests/ManifestPolicyTest keeps it that way. -->
+    <!-- One permission only: INTERNET, for the cinema rows (TMDB) and the weather (Open-Meteo). No storage,
+         no location, no secure settings, no accessibility service. ManifestPolicyTest keeps it that way. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Android 11+ package visibility, for the two intents the launcher lists apps with. It replaces
          QUERY_ALL_PACKAGES, which stays out. Android 9 ignores the block. -->
@@ -28,6 +29,7 @@
         android:banner="@drawable/banner"
         android:theme="@style/Theme.CleanYourTV"
         android:allowBackup="false"
+        android:usesCleartextTraffic="false"
         android:supportsRtl="true">
 
         <!-- Home screen. The second filter lists it in the TV's app row, so it can be tried without being
@@ -57,6 +59,16 @@
 
         <activity
             android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".WallpaperActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".DetailActivity"
             android:exported="false"
             android:screenOrientation="landscape" />
     </application>

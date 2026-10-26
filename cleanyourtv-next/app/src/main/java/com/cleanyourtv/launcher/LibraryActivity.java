@@ -22,20 +22,20 @@ public final class LibraryActivity extends Activity {
     private Prefs prefs;
     private LinearLayout content;
     private TextView title;
-    private int accent;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = new Prefs(this);
-        getWindow().setBackgroundDrawable(prefs.wallpaper().load(this));
+        getWindow().setBackgroundDrawable(Wallpaper.load(this, prefs));
 
         int margin = Ui.dp(this, 48);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(margin, margin, margin, 0);
+        page.setBackgroundColor(0x70000000);
 
-        title = Ui.text(this, 34, Palette.TEXT, Ui.light());
+        title = Ui.text(this, 36, Palette.TEXT, Ui.light(this));
         title.setText(R.string.library_title);
         page.addView(title);
 
@@ -55,7 +55,6 @@ public final class LibraryActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        accent = prefs.accent().color;
         AppRepository.loadAsync(this, prefs.includeNonTvApps(), apps -> {
             if (isDestroyed() || isFinishing()) return;
             populate(apps);
@@ -66,7 +65,7 @@ public final class LibraryActivity extends Activity {
         content.removeAllViews();
         title.setText(getString(R.string.library_title) + "  (" + apps.size() + ")");
         if (apps.isEmpty()) {
-            TextView empty = Ui.text(this, 20, Palette.TEXT_DIM, null);
+            TextView empty = Ui.text(this, 20, Palette.TEXT_DIM, Ui.regular(this));
             empty.setText(R.string.library_empty);
             content.addView(empty);
             return;
@@ -91,7 +90,7 @@ public final class LibraryActivity extends Activity {
                 content.addView(row);
             }
             final AppEntry app = apps.get(i);
-            TileView tile = new TileView(this, tileWidth, tileHeight, iconPx, accent);
+            TileView tile = new TileView(this, tileWidth, tileHeight, iconPx);
             tile.setLabel(app.label);
             IconCache.get().load(pm, app.packageName, iconPx, tile.iconView());
             tile.setOnClickListener(view -> {
