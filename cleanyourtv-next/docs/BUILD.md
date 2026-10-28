@@ -67,7 +67,7 @@ Then open **CleanYourTV** from the TV's app row: it shows up there without being
 
 Without the Android SDK, the logic and manifest tests can still run with `javac` and JUnit 4.13.2 against any `android.jar` of API 26 or later.
 
-## Getting the content panel and the weather to work
+## Getting the posters and the weather to work
 
 - **Weather**: nothing to set up. Open Settings, Weather city, type a city name, pick the match.
 - **Streaming content**: press OK on "Permission to read the TV home content" in Settings, and turn on the home-screen option inside the streaming app itself. No key. Details and what is unknown in [STREAMING-CONTENT.md](STREAMING-CONTENT.md).

@@ -8,10 +8,17 @@ import java.util.List;
 final class AppEntry {
     final String label;
     final String packageName;
+    /** The app declares itself a game (ApplicationInfo.CATEGORY_GAME): listed under "Games". */
+    final boolean game;
 
     AppEntry(String label, String packageName) {
+        this(label, packageName, false);
+    }
+
+    AppEntry(String label, String packageName, boolean game) {
         this.label = label;
         this.packageName = packageName;
+        this.game = game;
     }
 
     private static final Comparator<AppEntry> BY_LABEL = (a, b) -> {

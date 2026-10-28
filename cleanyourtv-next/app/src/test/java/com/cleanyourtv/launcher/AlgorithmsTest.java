@@ -86,20 +86,24 @@ public class AlgorithmsTest {
 
     // --- NavLogic ---
 
-    @Test public void upClimbsFromDockToContentToHeader() {
-        assertEquals(NavLogic.Zone.CONTENT, NavLogic.up(NavLogic.Zone.DOCK));
-        assertEquals(NavLogic.Zone.HEADER, NavLogic.up(NavLogic.Zone.CONTENT));
-        assertEquals(NavLogic.Zone.HEADER, NavLogic.up(NavLogic.Zone.HEADER));
+    @Test public void upClimbsOneZoneAtATime() {
+        assertEquals(NavLogic.Zone.CONTENT, NavLogic.up(NavLogic.Zone.DOCK, true));
+        assertEquals(NavLogic.Zone.CHIPS, NavLogic.up(NavLogic.Zone.CONTENT, true));
+        assertEquals("no chips outside Home", NavLogic.Zone.TOP, NavLogic.up(NavLogic.Zone.CONTENT, false));
+        assertEquals(NavLogic.Zone.TOP, NavLogic.up(NavLogic.Zone.CHIPS, true));
+        assertEquals(NavLogic.Zone.TOP, NavLogic.up(NavLogic.Zone.TOP, true));
     }
 
-    @Test public void downDescendsAndStopsAtTheDock() {
-        assertEquals(NavLogic.Zone.CONTENT, NavLogic.down(NavLogic.Zone.HEADER));
-        assertEquals(NavLogic.Zone.DOCK, NavLogic.down(NavLogic.Zone.CONTENT));
-        assertEquals("no app grid below the dock", NavLogic.Zone.DOCK, NavLogic.down(NavLogic.Zone.DOCK));
+    @Test public void downDescendsToTheDock() {
+        assertEquals(NavLogic.Zone.CHIPS, NavLogic.down(NavLogic.Zone.TOP, true));
+        assertEquals(NavLogic.Zone.CONTENT, NavLogic.down(NavLogic.Zone.TOP, false));
+        assertEquals(NavLogic.Zone.CONTENT, NavLogic.down(NavLogic.Zone.CHIPS, true));
+        assertEquals(NavLogic.Zone.DOCK, NavLogic.down(NavLogic.Zone.CONTENT, true));
     }
 
     @Test public void backGoesDownToTheDockThenStops() {
-        assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.HEADER));
+        assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.TOP));
+        assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.CHIPS));
         assertEquals(NavLogic.BackAction.FOCUS_DOCK, NavLogic.onBack(NavLogic.Zone.CONTENT));
         assertEquals(NavLogic.BackAction.IGNORE, NavLogic.onBack(NavLogic.Zone.DOCK));
     }

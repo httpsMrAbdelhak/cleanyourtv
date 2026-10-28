@@ -4,7 +4,6 @@
     <string name="greeting_morning">Good morning</string>
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
-    <string name="tab_weather">Weather</string>
     <string name="library_title">Apps</string>
     <string name="library_empty">No apps found</string>
     <string name="menu_add_dock">Add to dock</string>
@@ -19,8 +18,6 @@
     <string name="toast_dock_reset">Dock reset</string>
     <string name="action_open_settings">Open Settings</string>
     <string name="action_retry">Retry</string>
-    <string name="action_back">Back</string>
-    <string name="weather_no_city">Choose a city in Settings to see the weather. The location of the device is never used.</string>
     <string name="weather_offline">No network connection, and no saved forecast to show.</string>
     <string name="weather_failed">The weather service did not answer correctly. Try again in a moment.</string>
     <string name="weather_range">High %1$s  ·  Low %2$s</string>
@@ -124,4 +121,23 @@
     <string name="status_no_permission">Permission needed</string>
     <string name="status_nothing">The app published nothing</string>
     <string name="status_resume_hint">Continue watching comes from what the app itself publishes for the TV home screen. It appears when the app does it and the TV allows it; nothing is simulated.</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_my_list">My list</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_games">Games</string>
+    <string name="dock_label">Favourite apps</string>
+    <string name="section_next">Up next</string>
+    <string name="section_new">New</string>
+    <string name="meta_resume">Resume</string>
+    <string name="meta_left">%1$d min left</string>
+    <string name="meta_ends">ends at %1$s</string>
+    <string name="kind_movie">Movie</string>
+    <string name="kind_series">Series</string>
+    <string name="my_list_empty">%1$s has published no "my list" for the TV home screen. Add titles to your list in the app.</string>
+    <string name="search_title">Search</string>
+    <string name="search_hint">An app name</string>
+    <string name="search_none">No app has that name</string>
+    <string name="games_empty">No installed app declares itself a game</string>
+    <string name="wallpaper_navy">Night blue</string>
 </resources>

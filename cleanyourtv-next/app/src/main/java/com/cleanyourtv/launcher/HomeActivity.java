@@ -125,9 +125,17 @@ public final class HomeActivity extends Activity implements HomeScreen.Host, Wal
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    /** The app drawer rises from the dock; Up from its first row (or Back) sinks it again. */
     @Override
-    public void openLibrary() {
-        startActivity(new Intent(this, LibraryActivity.class));
+    public void openDrawer(int mode) {
+        startActivity(new Intent(this, LibraryActivity.class).putExtra(LibraryActivity.EXTRA_MODE, mode));
+        overridePendingTransition(R.anim.drawer_in, R.anim.stay);
+    }
+
+    @Override
+    public void rebuild() {
+        Palette.apply(prefs);
+        recreate();
     }
 
     /** Asks for the permission to read what the streaming app publishes for the TV home screen. */

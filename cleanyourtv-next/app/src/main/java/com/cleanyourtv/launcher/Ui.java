@@ -39,6 +39,7 @@ final class Ui {
     private static Typeface light;
     private static Typeface regular;
     private static Typeface medium;
+    private static Typeface semibold;
 
     static synchronized Typeface light(Context context) {
         if (light == null) light = font(context, R.font.outfit_light, "sans-serif-light");
@@ -53,6 +54,11 @@ final class Ui {
     static synchronized Typeface medium(Context context) {
         if (medium == null) medium = font(context, R.font.outfit_medium, "sans-serif-medium");
         return medium;
+    }
+
+    static synchronized Typeface semibold(Context context) {
+        if (semibold == null) semibold = font(context, R.font.outfit_semibold, "sans-serif-medium");
+        return semibold;
     }
 
     /** The bundled font, or a system one if it cannot be loaded: a missing font must never stop the home screen. */

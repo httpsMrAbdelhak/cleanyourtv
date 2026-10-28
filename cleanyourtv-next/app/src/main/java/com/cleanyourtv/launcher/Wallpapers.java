@@ -8,8 +8,16 @@ final class Wallpapers {
 
     /** Id saved when the wallpaper is a picture from the device (see WallpaperStore). */
     static final String CUSTOM = "custom";
+    /** What the moon button switches between. */
+    static final String DEFAULT_DARK = "navy";
+    static final String DEFAULT_LIGHT = "pearl";
 
     static final WallpaperSource[] ALL = {
+            // Night blue with a soft violet light low on the screen: the default, dark look.
+            new SceneWallpaper("navy", R.string.wallpaper_navy, new SceneSpec(false, 0xFF0A1128, 0xFF1F2B63,
+                    new Blob(0.50f, 1.05f, 0.75f, 0.55f, 0xFF3D52C4, 0.05f, 0.02f, 1, 1, 0.00f),
+                    new Blob(0.15f, 0.85f, 0.45f, 0.70f, 0xFF5A3DA8, 0.05f, 0.03f, 1, 2, 0.35f),
+                    new Blob(0.90f, 0.20f, 0.40f, 0.70f, 0xFF1D3C8F, 0.04f, 0.03f, 2, 1, 0.70f))),
             new SceneWallpaper("pearl", R.string.wallpaper_pearl, new SceneSpec(true, 0xFFF6F8FC, 0xFFE4E9F2,
                     new Blob(0.20f, 0.25f, 0.55f, 0.80f, 0xFFB9D2FF, 0.06f, 0.03f, 1, 1, 0.00f),
                     new Blob(0.85f, 0.20f, 0.45f, 0.75f, 0xFFE3CCFF, 0.05f, 0.04f, 1, 2, 0.30f),

@@ -14,4 +14,4 @@
 - The app must publish its Watch Next / home-screen rows (many streaming apps have an option for it).
 - The TV's provider must hand them to a third-party home screen. I could not confirm this on a device, and in an earlier version of this document I wrongly assumed it was impossible: the permission turned out to be requestable. Whether Xiaomi's firmware accepts it is for your TV to answer.
 
-When something is missing, the panel says what (no app, no permission, nothing published, refused), and no list is ever invented.
+When something is missing, the screen says what (no app, no permission, nothing published, refused), and no list is ever invented.

@@ -56,7 +56,9 @@ final class AppRepository {
             String packageName = info.activityInfo.packageName;
             if (packageName.equals(ownPackage) || into.containsKey(packageName)) continue;
             CharSequence label = info.loadLabel(pm);
-            into.put(packageName, new AppEntry(label == null ? packageName : label.toString(), packageName));
+            boolean game = info.activityInfo.applicationInfo != null
+                    && info.activityInfo.applicationInfo.category == android.content.pm.ApplicationInfo.CATEGORY_GAME;
+            into.put(packageName, new AppEntry(label == null ? packageName : label.toString(), packageName, game));
         }
     }
 

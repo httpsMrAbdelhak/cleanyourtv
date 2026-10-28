@@ -6,16 +6,18 @@ Plain Java on the Android framework. No AndroidX, no Kotlin, no layout XML: ever
 
 ```
 HomeActivity          host: the wallpaper under one HomeScreen; rebuilds when the theme flips; asks for the TV permission
-  HomeScreen          header (greeting, three tabs, clock, settings button), content panel, glass dock
-    ContentPanel      the panel above the dock: the streaming app's content, or the weather
-      CardRail        a row of cards (posters, landscape cards with a progress bar), loaded near the focus only
-      WeatherPanel    current weather and seven days on one glass card
-LibraryActivity       every installed app as wide banners (opened by Down on the dock)
+  HomeScreen          top bar, greeting, chips, the page in the middle, glass dock, ambient light
+    TopBar            avatar, sections (Home, Library, My list, Apps, Games), search, round buttons, weather pill
+    CardRail          a row of posters; the selected one widens to a landscape card; images loaded near the focus only
+    LibraryShelf      the Library page: every row of the app, one rail under the other
+    WeatherPanel      current weather and seven days on one glass card (OK on the weather pill)
+    MessageBox        a plain message with one button (no app, no permission, nothing published)
+LibraryActivity       the app drawer: every app as wide banners, or the games, or a search; slides up from the dock
 SettingsActivity      sections of rows; every change saved at once
 WallpaperActivity     gallery with live preview; picture from the device
 ```
 
-Where the content comes from (`TvChannels`): the TV's own provider of channels and programs, for the one app chosen in Settings (found by name, "Nuvio", when nothing is chosen). Rows read: Watch Next (shown as "Continue watching") and the app's preview channels. `EntryFilter` applies the tabs, `IntentGuard` lets an entry start only the chosen app, `ProgramKind` turns the provider's type numbers into movie, series or other.
+Where the content comes from (`TvChannels`): the TV's own provider of channels and programs, for the one app chosen in Settings (found by name, "Nuvio", when nothing is chosen). Rows read: Watch Next (shown as "Continue watching") and the app's preview channels. `EntryFilter` applies the chips, `IntentGuard` lets an entry start only the chosen app, `ProgramKind` turns the provider's type numbers into movie, series or other.
 
 ## Design system
 
@@ -25,7 +27,8 @@ Where the content comes from (`TvChannels`): the TV's own provider of channels a
 | `Backdrop` | The frosted wallpaper: drawn once into 320x180, box-blurred once (`BoxBlur`), rebuilt only when the wallpaper or effects level changes. Never recomputed per frame, never a full-size blur. |
 | `AmbientGlow` | The light along the bottom of the screen, corner to corner: a fixed band plus a brighter spot under the selected app, each one white gradient tinted by a colour filter. Only the spot slides; colour and fade animate in 420 ms. |
 | `DominantColor` | The colour of an icon: the most vivid hue of a 24x24 copy, lifted to glow brightness; a grey icon gives the accent colour. |
-| `HomeLayoutTest` | Runs the real home screen on a simulated 1920x1080 display (Robolectric) and checks the header is on top, the dock at the bottom and the panel between. |
+| `CardView` | A card that animates its width from a portrait poster (2:3) to a landscape card (16:9) in 220 ms when selected. The landscape picture is loaded only while the card is selected; without one, the poster is shown cropped. `ShapePolicy` picks the pictures, `CardText` the badge and details line. |
+| `HomeLayoutTest` | Runs the real home screen on a simulated 1920x1080 display (Robolectric) and checks the greeting is near the top, the dock in the lower fifth and centred, and the row between. |
 | `SceneDrawable` | A wallpaper made of soft radial lights over a dark gradient: no bitmap, sharp at any size. Animated only by moving the lights along a seamless loop. |
 | `WallpaperView` | Draws the wallpaper and two shades. Animates at about 15 fps, only while visible, and falls back to the still picture for good if the TV cannot keep up. |
 | Outfit font | Variable font, SIL OFL. Loaded once. |
@@ -40,15 +43,15 @@ Android 9 has no cheap live background blur (`RenderEffect` is Android 12). Re-b
 
 ## Remote navigation
 
-Three zones (`NavLogic`): header on top, panel in the middle, dock at the bottom. The dock has the focus at start.
+Four zones (`NavLogic`): top bar, chips (Home only), content, dock. The dock has the focus at start.
 
-- **Dock**: Left and Right move and stop at both ends; Up goes to the panel (or the header when the panel is empty); **Down opens the list of all apps**; OK opens the app; long OK or Menu edits.
-- **Panel**: Left and Right glide along the cards and stop at the ends; Up goes to the header; Down returns to the dock.
-- **Header**: Down enters the panel. The three tabs only apply to the streaming content: they are dimmed and skipped while the weather is shown.
-- **App list**: five banners per row; OK opens, long OK adds to or removes from the dock; Back returns to the dock.
-- **Back**: from the panel or the header it goes down to the dock; on the dock it does nothing.
+- **Dock**: Left and Right move and stop at both ends; Up goes to the content (or the chips, or the top bar, when there is none); **Down opens the app drawer**; OK opens the app; long OK or Menu edits.
+- **Content**: Left and Right glide along the cards and stop at the ends; the selected poster widens. Up goes to the chips (Home) or the top bar; Down returns to the dock.
+- **Top bar**: resting on Home, Library or My list for 220 ms shows that page; Apps and Games open the drawer on OK. Down enters the page.
+- **App drawer**: five banners per row; OK opens, long OK adds to or removes from the dock. **Up from the top row returns to the dock**, as Back does: no need to press Back.
+- **Back**: from anywhere it goes down to the dock; on the dock it does nothing.
 - **Home key** while already on Home: back to the dock.
-- The panel changes 220 ms after the focus rests on the weather tile (or leaves it), so crossing the dock fast starts nothing; a late answer for a request already replaced is dropped.
+- A late answer for a request already replaced is dropped.
 
 ## Network and memory (about 1 GB of RAM)
 

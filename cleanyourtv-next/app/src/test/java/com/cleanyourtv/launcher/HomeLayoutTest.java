@@ -74,12 +74,12 @@ public class HomeLayoutTest {
         String where = "title top " + titleTop + ", panel top " + panelTop + ", dock " + dockTop + ".." + dockBottom
                 + " of " + H + ", dock children " + ((ViewGroup) dock).getChildCount();
 
-        assertTrue("the dock has its banners (" + where + ")", ((ViewGroup) dock).getChildCount() >= 2);
+        assertTrue("the dock has its label and banners (" + where + ")", ((ViewGroup) dock).getChildCount() >= 3);
         assertTrue("the dock is in the lower fifth (" + where + ")", dockTop > H * 75 / 100);
         assertTrue("the dock ends inside the screen (" + where + ")", dockBottom <= H);
-        assertTrue("the title is in the top tenth (" + where + ")", titleTop < H / 10);
+        assertTrue("the greeting is in the top fifth, under the top bar (" + where + ")", titleTop < H / 5 && titleTop > H / 20);
         assertTrue("the panel is below the title (" + where + ")", panelTop > titleTop);
         assertTrue("the panel starts above the dock (" + where + ")", panelTop < dockTop);
-        assertEquals("the dock is centred", (W - dock.getWidth()) / 2, dock.getLeft(), 2);
+        assertEquals("the dock is centred", dock.getLeft(), W - dock.getRight(), 2);
     }
 }

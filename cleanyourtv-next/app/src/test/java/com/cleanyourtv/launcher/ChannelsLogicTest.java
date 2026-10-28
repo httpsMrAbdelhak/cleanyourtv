@@ -14,7 +14,7 @@ import org.junit.Test;
 /** The pure parts of reading what a streaming app publishes for the Android TV home screen. */
 public class ChannelsLogicTest {
     private static TvEntry entry(String title, TvEntry.Kind kind, boolean resume) {
-        return new TvEntry(resume ? "Continue" : "Row", title, "", "", "", resume ? 0.4f : -1f, kind, TvEntry.Shape.POSTER, resume);
+        return new TvEntry(resume ? "Continue" : "Row", title, "", "", "", "", resume ? 0.4f : -1f, -1, "", "", kind, resume);
     }
 
     @Test public void programTypesMapToTabs() {
@@ -107,10 +107,44 @@ public class ChannelsLogicTest {
     }
 
     @Test public void thePosterComesBeforeTheEpisodePicture() {
-        assertTrue(ShapePolicy.usePoster(true));
-        assertFalse("no poster: the thumbnail is used", ShapePolicy.usePoster(false));
-        assertEquals(TvEntry.Shape.POSTER, ShapePolicy.shape(true, false));
-        assertEquals("a landscape poster keeps a landscape card", TvEntry.Shape.LANDSCAPE, ShapePolicy.shape(true, true));
-        assertEquals(TvEntry.Shape.LANDSCAPE, ShapePolicy.shape(false, false));
+        assertEquals("p", ShapePolicy.poster("p", "t"));
+        assertEquals("no poster: the thumbnail", "t", ShapePolicy.poster("", "t"));
+    }
+
+    @Test public void theWideCardAvoidsEpisodeStills() {
+        assertEquals("a landscape poster is ideal", "p", ShapePolicy.wide("p", true, "t", true, true));
+        assertEquals("a film's landscape thumbnail is key art", "t", ShapePolicy.wide("p", false, "t", true, false));
+        assertEquals("an episode's thumbnail is a still: the poster instead", "p", ShapePolicy.wide("p", false, "t", true, true));
+        assertEquals("a tall thumbnail is no use wide", "p", ShapePolicy.wide("p", false, "t", false, false));
+        assertEquals("only a thumbnail: use it", "t", ShapePolicy.wide("", false, "t", true, true));
+    }
+
+    @Test public void cardTexts() {
+        assertEquals("S38E01", CardText.badge("38", "1"));
+        assertEquals("S2E10", CardText.badge("2", "10"));
+        assertEquals("E04", CardText.badge("", "4"));
+        assertEquals("", CardText.badge("3", ""));
+        assertEquals("", CardText.badge(null, null));
+        assertEquals(20, CardText.minutesLeft(19 * 60_000 + 10_000));
+        assertEquals(1, CardText.minutesLeft(1));
+        assertEquals(-1, CardText.minutesLeft(-1));
+        assertEquals(1_200_000, CardText.remaining(600_000, 1_800_000));
+        assertEquals(-1, CardText.remaining(0, 1_800_000));
+        assertEquals("finished", -1, CardText.remaining(1_800_000, 1_800_000));
+        assertEquals("2021", CardText.year("2021-09-15"));
+        assertEquals("2021", CardText.year("2021"));
+        assertEquals("", CardText.year("1632000000000"));
+        assertEquals("", CardText.year(null));
+        assertEquals("Reprendre \u00B7 S38E01 \u00B7 reste 20 min", CardText.join("Reprendre", "S38E01", "", "reste 20 min"));
+    }
+
+    @Test public void theDrawerFiltersGamesAndSearch() {
+        List<AppEntry> apps = Arrays.asList(new AppEntry("Asphalt 9", "com.game", true),
+                new AppEntry("Netflix", "com.netflix.ninja"), new AppEntry("Nuvio", "dev.nuvio.android"));
+        assertEquals(3, LibraryActivity.select(apps, LibraryActivity.MODE_ALL, "").size());
+        assertEquals(1, LibraryActivity.select(apps, LibraryActivity.MODE_GAMES, "").size());
+        assertEquals("Asphalt 9", LibraryActivity.select(apps, LibraryActivity.MODE_GAMES, "").get(0).label);
+        assertEquals(1, LibraryActivity.select(apps, LibraryActivity.MODE_SEARCH, "flix").size());
+        assertEquals("an empty search shows everything", 3, LibraryActivity.select(apps, LibraryActivity.MODE_SEARCH, "  ").size());
     }
 }

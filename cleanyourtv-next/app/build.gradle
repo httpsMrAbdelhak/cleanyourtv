@@ -17,8 +17,8 @@ android {
         // Android 8.0. The target is Android TV 9 (API 28); 26 keeps adaptive icons without a fallback.
         minSdk 26
         targetSdk 34
-        versionCode 4
-        versionName '0.4.0'
+        versionCode 5
+        versionName '0.5.0'
         // English and French only: other locales' strings from the SDK are dropped from the APK.
         resourceConfigurations += ['en', 'fr']
     }

@@ -98,7 +98,7 @@ public class SmallLogicTest {
                 light++;
                 assertTrue(source.id() + " must be pale", brightness(spec.top) > 200 && brightness(spec.bottom) > 190);
             } else {
-                assertTrue(source.id() + " must stay dark", brightness(spec.top) < 40 && brightness(spec.bottom) < 40);
+                assertTrue(source.id() + " must stay dark", brightness(spec.top) < 40 && brightness(spec.bottom) < 64);
             }
             for (SceneSpec.Blob blob : spec.blobs) {
                 assertTrue(source.id(), blob.speedX >= 1 && blob.speedY >= 1);
@@ -106,7 +106,8 @@ public class SmallLogicTest {
             }
         }
         assertTrue("the clean light look must be offered", light >= 2);
-        assertTrue("and it is the default", Wallpapers.ALL[0].light());
+        assertEquals("the default is the dark night blue of the reference screen", Wallpapers.DEFAULT_DARK, Wallpapers.ALL[0].id());
+        assertTrue("the moon switches to a light wallpaper", Wallpapers.byId(Wallpapers.DEFAULT_LIGHT).light());
     }
 
     private static int brightness(int argb) {

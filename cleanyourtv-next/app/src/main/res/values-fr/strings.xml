@@ -4,7 +4,6 @@
     <string name="greeting_morning">Bonjour</string>
     <string name="greeting_afternoon">Bon après-midi</string>
     <string name="greeting_evening">Bonsoir</string>
-    <string name="tab_weather">Météo</string>
     <string name="library_title">Applications</string>
     <string name="library_empty">Aucune application trouvée</string>
     <string name="menu_add_dock">Ajouter au dock</string>
@@ -19,8 +18,6 @@
     <string name="toast_dock_reset">Dock réinitialisé</string>
     <string name="action_open_settings">Ouvrir les réglages</string>
     <string name="action_retry">Réessayer</string>
-    <string name="action_back">Retour</string>
-    <string name="weather_no_city">Choisissez une ville dans les Réglages pour voir la météo. La position de l\'appareil n\'est jamais utilisée.</string>
     <string name="weather_offline">Pas de connexion réseau, et aucune prévision enregistrée à afficher.</string>
     <string name="weather_failed">Le service météo n\'a pas répondu correctement. Réessayez dans un instant.</string>
     <string name="weather_range">Max %1$s  ·  Min %2$s</string>
@@ -124,4 +121,23 @@
     <string name="status_no_permission">Autorisation requise</string>
     <string name="status_nothing">L\'app n\'a rien publié</string>
     <string name="status_resume_hint">La reprise de lecture vient de ce que l\'app publie elle-même pour l\'écran d\'accueil TV. Elle apparaît quand l\'app le fait et que la TV l\'autorise ; rien n\'est simulé.</string>
+    <string name="nav_home">Accueil</string>
+    <string name="nav_library">Bibliothèque</string>
+    <string name="nav_my_list">Ma liste</string>
+    <string name="nav_apps">Applications</string>
+    <string name="nav_games">Jeux</string>
+    <string name="dock_label">Applis favorites</string>
+    <string name="section_next">À suivre</string>
+    <string name="section_new">Nouveautés</string>
+    <string name="meta_resume">Reprendre</string>
+    <string name="meta_left">reste %1$d min</string>
+    <string name="meta_ends">finit à %1$s</string>
+    <string name="kind_movie">Film</string>
+    <string name="kind_series">Série</string>
+    <string name="my_list_empty">%1$s n\'a publié aucune « liste » pour l\'écran d\'accueil TV. Ajoutez des titres à votre liste dans l\'app.</string>
+    <string name="search_title">Recherche</string>
+    <string name="search_hint">Nom d\'une application</string>
+    <string name="search_none">Aucune application ne porte ce nom</string>
+    <string name="games_empty">Aucune application installée ne se déclare comme jeu</string>
+    <string name="wallpaper_navy">Bleu nuit</string>
 </resources>
