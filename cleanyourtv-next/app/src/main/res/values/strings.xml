@@ -70,7 +70,7 @@
     <string name="status_failed">Error</string>
     <string name="status_never">Not used yet</string>
     <string name="settings_version">Version</string>
-    <string name="about_credits">Cinema data: TMDB. Weather: Open-Meteo.com (CC BY 4.0). Font: Outfit (SIL Open Font License).</string>
+    <string name="about_credits">Film and series data and posters: TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. Weather: Open-Meteo.com (CC BY 4.0). Font: Outfit (SIL Open Font License).</string>
     <string name="value_on">On</string>
     <string name="value_off">Off</string>
     <string name="clock_system">System</string>
@@ -123,10 +123,8 @@
     <string name="status_resume_hint">Continue watching comes from what the app itself publishes for the TV home screen. It appears when the app does it and the TV allows it; nothing is simulated.</string>
     <string name="nav_home">Home</string>
     <string name="nav_library">Library</string>
-    <string name="nav_my_list">My list</string>
     <string name="nav_apps">Apps</string>
     <string name="nav_games">Games</string>
-    <string name="dock_label">Favourite apps</string>
     <string name="section_next">Up next</string>
     <string name="section_new">New</string>
     <string name="meta_resume">Resume</string>
@@ -134,10 +132,26 @@
     <string name="meta_ends">ends at %1$s</string>
     <string name="kind_movie">Movie</string>
     <string name="kind_series">Series</string>
-    <string name="my_list_empty">%1$s has published no "my list" for the TV home screen. Add titles to your list in the app.</string>
     <string name="search_title">Search</string>
     <string name="search_hint">An app name</string>
     <string name="search_none">No app has that name</string>
     <string name="games_empty">No installed app declares itself a game</string>
     <string name="wallpaper_navy">Night blue</string>
+    <string name="nav_explore">Explore</string>
+    <string name="section_my_list">My list</string>
+    <string name="trending_movies">Trending films</string>
+    <string name="trending_series">Trending series</string>
+    <string name="trending_no_key">Explore shows the trending films and series of TMDB. Add your TMDB key in Settings.</string>
+    <string name="trending_bad_key">TMDB refused the key. Check it in Settings.</string>
+    <string name="trending_offline">No network: the trending titles cannot be loaded.</string>
+    <string name="trending_failed">TMDB did not answer correctly.</string>
+    <string name="trending_search_in">Search for “%1$s” in %2$s</string>
+    <string name="settings_tmdb_key">TMDB key</string>
+    <string name="settings_tmdb_clear">Forget the typed TMDB key</string>
+    <string name="settings_tmdb_hint">Used for the Explore page and for the posters of the series and films of your streaming app, instead of episode pictures. A v3 key or a v4 read token from themoviedb.org. Only the titles are sent to TMDB.</string>
+    <string name="tmdb_key_typed">Typed (%1$s)</string>
+    <string name="tmdb_key_build">From the APK (%1$s)</string>
+    <string name="status_tmdb">TMDB</string>
+    <string name="status_no_key">No key</string>
+    <string name="status_bad_key">Key refused</string>
 </resources>

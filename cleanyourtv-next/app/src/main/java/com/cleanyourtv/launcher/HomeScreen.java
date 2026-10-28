@@ -28,7 +28,8 @@ import java.util.Set;
  * The home screen. From top to bottom: the top bar (sections, search, buttons, weather and time), a bold
  * greeting, the chips Explore, Movies, Series, a shelf of posters from the streaming app (the selected one
  * widens), and a liquid-glass dock of app banners with the ambient light along the bottom of the screen.
- * Library shows every row of the app one under the other; My list shows its watchlist. Down on the dock opens
+ * Library shows every row of the app one under the other; Explore shows the trending films and series of TMDB.
+ * The app's cards show the TMDB poster of their series or film when a key is set. Down on the dock opens
  * the app drawer. Back from anywhere goes down to the dock; on the dock it does nothing.
  */
 final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.Listener, WeatherPanel.Listener,
@@ -89,6 +90,10 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
     private String sourceLabel = "";
     private TvChannels.Result content;
     private int token;
+    private Tmdb.Trending trending;
+    private int trendingToken;
+    /** The Library shelf skipped an update because it had the focus: rebuild it next time it is shown. */
+    private boolean shelfStale;
 
     HomeScreen(Context context, Host host, Prefs prefs) {
         super(context);
@@ -127,6 +132,7 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
             view.setDefaultFocusHighlightEnabled(false);
             view.setTag(context.getString(chipNames[i]));
             view.setOnFocusChangeListener((v, hasFocus) -> {
+                v.setForeground(hasFocus ? chipRing(v.getContext()) : null);
                 if (!hasFocus) return;
                 pendingChip = index;
                 handler.removeCallbacks(applyChip);
@@ -182,17 +188,17 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         shelfParams.setMargins(side - Ui.dp(context, 4), Ui.dp(context, 118), 0, 0);
         addView(shelf, shelfParams);
 
-        // The dock: liquid glass, "Favourite apps" and the banners.
+        // The dock: liquid glass and the banners, nothing else.
         dock = new LinearLayout(context);
         dock.setOrientation(LinearLayout.HORIZONTAL);
         dock.setGravity(Gravity.CENTER_VERTICAL);
         dock.setClipChildren(false);
         dock.setClipToPadding(false);
         int pad = Ui.dp(context, 12);
-        dock.setPadding(Ui.dp(context, 22), pad, pad, pad);
+        dock.setPadding(pad, pad, pad, pad);
         dock.setBackground(new GlassDrawable(Ui.dp(context, 26), Ui.dp(context, 1.6f), true, false, true, prefs.effects()));
-        LayoutParams dockParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        LayoutParams dockParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         dockParams.setMargins(Ui.dp(context, 48), 0, Ui.dp(context, 48), Ui.dp(context, 34));
         addView(dock, dockParams);
 
@@ -286,10 +292,12 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         weatherShown = false;
         boolean home = section == TopBar.HOME;
         chipRow.setVisibility(home ? VISIBLE : GONE);
-        homeArea.setVisibility(section == TopBar.LIBRARY ? GONE : VISIBLE);
-        shelf.setVisibility(section == TopBar.LIBRARY ? VISIBLE : GONE);
+        homeArea.setVisibility(home ? VISIBLE : GONE);
+        shelf.setVisibility(home ? GONE : VISIBLE);
+        shelfStale = true;
         updateGreeting();
         render();
+        if (section == TopBar.EXPLORE && (trending == null || trending.error != Tmdb.Error.NONE)) loadTrending();
     }
 
     private void updateGreeting() {
@@ -297,8 +305,8 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
             greeting.setText(R.string.nav_library);
             return;
         }
-        if (page == TopBar.MY_LIST) {
-            greeting.setText(R.string.nav_my_list);
+        if (page == TopBar.EXPLORE) {
+            greeting.setText(R.string.nav_explore);
             return;
         }
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
@@ -320,24 +328,26 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         }
     }
 
-    /** The selected chip is a white pill with a tick; the others are outlined. */
+    /**
+     * The chips are Liquid Glass, like the dock: the frosted wallpaper behind each one, the selected chip in the
+     * brighter glass with a tick. The glass is the background itself (not inside a state list) so that it can
+     * sample the wallpaper at its own place; the focus ring is drawn on top as the foreground.
+     */
     private void updateChips() {
         Context context = getContext();
         for (int i = 0; i < chips.length; i++) {
             boolean on = i == chip;
-            float radius = Ui.dp(context, 15);
-            android.graphics.drawable.GradientDrawable rest = Ui.round(on ? 0xF2FFFFFF : 0x00000000, radius);
-            rest.setStroke(Ui.dp(context, 1.5f), on ? 0xF2FFFFFF : (Palette.light ? 0x66000000 : 0x8CFFFFFF));
-            android.graphics.drawable.GradientDrawable lit = Ui.round(on ? 0xFFFFFFFF : Palette.TILE_FOCUSED, radius);
-            lit.setStroke(Ui.dp(context, 2.5f), Palette.RING);
-            android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
-            states.addState(new int[] {android.R.attr.state_focused}, lit);
-            states.addState(new int[] {}, rest);
-            chips[i].setBackground(states);
+            chips[i].setBackground(new GlassDrawable(Ui.dp(context, 15), Ui.dp(context, 1.2f), true, on, prefs.effects()));
             chips[i].setText((on ? "✓  " : "") + chips[i].getTag());
-            chips[i].setTextColor(on ? 0xFF1A1D26 : Palette.TEXT);
+            chips[i].setTextColor(on ? Palette.TEXT : Palette.TEXT_DIM);
             chips[i].setTypeface(on ? Ui.semibold(context) : Ui.medium(context));
         }
+    }
+
+    private static android.graphics.drawable.GradientDrawable chipRing(Context context) {
+        android.graphics.drawable.GradientDrawable ring = Ui.round(0x00000000, Ui.dp(context, 15));
+        ring.setStroke(Ui.dp(context, 2.5f), Palette.RING);
+        return ring;
     }
 
     // --- content ----------------------------------------------------------------------------------------
@@ -356,11 +366,29 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         Context context = getContext();
         TvChannels.Labels names = new TvChannels.Labels(context.getString(R.string.section_continue),
                 context.getString(R.string.section_next), context.getString(R.string.section_new),
-                context.getString(R.string.nav_my_list));
+                context.getString(R.string.section_my_list));
         TvChannels.load(context, sourcePackage, names, result -> {
             if (mine != token) return;
-            content = result;
-            render();
+            // The cards get the poster of their series or film from TMDB: the cached ones at once, the
+            // others when they arrive. Without a key the app's own pictures are shown as they are.
+            Tmdb.posters(context, result, withPosters -> {
+                if (mine != token || withPosters == content) return;
+                content = withPosters;
+                render();
+            });
+        });
+    }
+
+    private void loadTrending() {
+        final int mine = ++trendingToken;
+        Context context = getContext();
+        Tmdb.trending(context, context.getString(R.string.trending_movies), context.getString(R.string.trending_series), result -> {
+            if (mine != trendingToken || !isAttachedToWindow()) return;
+            trending = result;
+            if (page == TopBar.EXPLORE) {
+                shelfStale = true;
+                render();
+            }
         });
     }
 
@@ -368,6 +396,10 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
     private void render() {
         if (weatherShown) return;
         weather.setVisibility(GONE);
+        if (page == TopBar.EXPLORE) {
+            renderTrending();
+            return;
+        }
         if (content == null) return;
         Context context = getContext();
         switch (content.status) {
@@ -391,16 +423,13 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
                 break;
         }
         if (page == TopBar.LIBRARY) {
-            message.setVisibility(GONE);
-            shelf.setVisibility(VISIBLE);
-            shelf.setSections(content.sections);
+            showShelf(content.sections);
             return;
         }
-        List<TvEntry> entries = page == TopBar.MY_LIST ? EntryFilter.oneCardPerTitle(content.watchlist)
-                : EntryFilter.apply(content.home, chip);
+        List<TvEntry> entries = EntryFilter.apply(content.home, chip);
         if (entries.isEmpty()) {
-            int text = page == TopBar.MY_LIST ? R.string.my_list_empty : R.string.source_tab_empty;
-            showMessage(context.getString(text, sourceLabel), context.getString(R.string.action_retry), () -> loadContent(true));
+            showMessage(context.getString(R.string.source_tab_empty, sourceLabel), context.getString(R.string.action_retry),
+                    () -> loadContent(true));
             return;
         }
         message.setVisibility(GONE);
@@ -408,8 +437,45 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         rail.setEntries(entries);
     }
 
+    /** Explore: the trending films and series, or why there are none (no key, a refused key, no network). */
+    private void renderTrending() {
+        if (trending == null) return;
+        Context context = getContext();
+        switch (trending.error) {
+            case NO_KEY:
+                showMessage(context.getString(R.string.trending_no_key), context.getString(R.string.action_open_settings),
+                        () -> host.openSettings());
+                return;
+            case BAD_KEY:
+                showMessage(context.getString(R.string.trending_bad_key), context.getString(R.string.action_open_settings),
+                        () -> host.openSettings());
+                return;
+            case OFFLINE:
+            case FAILED:
+                showMessage(context.getString(trending.error == Tmdb.Error.OFFLINE ? R.string.trending_offline
+                        : R.string.trending_failed), context.getString(R.string.action_retry), this::loadTrending);
+                return;
+            default:
+                break;
+        }
+        Map<String, List<TvEntry>> rows = new java.util.LinkedHashMap<>();
+        if (!trending.movies.isEmpty()) rows.put(context.getString(R.string.trending_movies), trending.movies);
+        if (!trending.series.isEmpty()) rows.put(context.getString(R.string.trending_series), trending.series);
+        showShelf(rows);
+    }
+
+    /** Library and Explore: rows one under the other. A shelf that has the focus is not rebuilt under the user. */
+    private void showShelf(Map<String, List<TvEntry>> rows) {
+        message.setVisibility(GONE);
+        homeArea.setVisibility(GONE);
+        shelf.setVisibility(VISIBLE);
+        if (shelf.hasFocus() && !shelfStale) return;
+        shelfStale = false;
+        shelf.setSections(rows);
+    }
+
     private void showMessage(String text, String action, Runnable onAction) {
-        if (page == TopBar.LIBRARY) {
+        if (page != TopBar.HOME) {
             shelf.setVisibility(GONE);
             homeArea.setVisibility(VISIBLE);
         }
@@ -419,7 +485,7 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
     }
 
     private boolean enterHomeArea() {
-        if (page == TopBar.LIBRARY && shelf.getVisibility() == VISIBLE) return shelf.enter();
+        if (page != TopBar.HOME && shelf.getVisibility() == VISIBLE) return shelf.enter();
         if (message.getVisibility() == VISIBLE) return message.focusButton();
         if (weather.getVisibility() == VISIBLE) return weather.focusCard();
         return rail.getVisibility() == VISIBLE && rail.focusFirst();
@@ -451,6 +517,9 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         }
         if (sourcePackage == null || !AppRepository.launch(context, sourcePackage)) {
             Toast.makeText(context, R.string.toast_launch_failed, Toast.LENGTH_SHORT).show();
+        } else if (entry.intentUri.isEmpty() && page == TopBar.EXPLORE) {
+            // A trending title has no intent of the app: say what to look for once the app is open.
+            Toast.makeText(context, context.getString(R.string.trending_search_in, entry.title, sourceLabel), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -616,16 +685,9 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
         tiles.clear();
 
         Context context = getContext();
-        TextView label = Ui.text(context, 15, Palette.TEXT_DIM, Ui.medium(context));
-        label.setText(R.string.dock_label);
-        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        labelParams.rightMargin = Ui.dp(context, 14);
-        dock.addView(label, labelParams);
-
         int count = Math.max(1, shown.size());
         int gap = Ui.dp(context, 7);
-        int available = getResources().getDisplayMetrics().widthPixels - Ui.dp(context, 2 * 48 + 22 + 12 + 130);
+        int available = getResources().getDisplayMetrics().widthPixels - Ui.dp(context, 2 * 48 + 2 * 12);
         int width = Math.min(Ui.dp(context, 118), available / count - 2 * gap);
         int height = width * 9 / 16;
         PackageManager pm = context.getPackageManager();

@@ -169,10 +169,21 @@ public final class SettingsActivity extends Activity {
             }
         });
         addRow(R.string.settings_source_hint, null, null).setFocusable(false);
+        View tmdbRow = addRow(R.string.settings_tmdb_key, () -> tmdbKeyValue(), null);
+        tmdbRow.setOnClickListener(v -> editText(R.string.settings_tmdb_key, "", true, text -> {
+            if (!text.isEmpty()) prefs.setTmdbKey(text);
+        }));
+        View tmdbClear = addRow(R.string.settings_tmdb_clear, () -> "", null);
+        tmdbClear.setOnClickListener(v -> {
+            prefs.setTmdbKey("");
+            refresh();
+        });
+        addRow(R.string.settings_tmdb_hint, null, null).setFocusable(false);
 
         section(R.string.section_status);
         addRow(R.string.status_content, () -> statusText(prefs.status("channels")), null);
         addRow(R.string.status_weather, () -> statusText(prefs.status("weather")), null);
+        addRow(R.string.status_tmdb, () -> statusText(prefs.status("tmdb")), null);
         addRow(R.string.status_resume_hint, null, null).setFocusable(false);
 
         section(R.string.section_about);
@@ -192,6 +203,18 @@ public final class SettingsActivity extends Activity {
         return getString(prefs.animatedWallpaper() ? R.string.value_on : R.string.value_off);
     }
 
+    /** Which key is used, never the key itself: only its last four characters. */
+    private String tmdbKeyValue() {
+        String typed = prefs.tmdbKey();
+        if (!typed.isEmpty()) return getString(R.string.tmdb_key_typed, tail(typed));
+        if (Tmdb.hasKey(prefs)) return getString(R.string.tmdb_key_build, tail(Tmdb.key(prefs)));
+        return getString(R.string.settings_none);
+    }
+
+    private static String tail(String key) {
+        return "…" + key.substring(Math.max(0, key.length() - 4));
+    }
+
     private String sourceName() {
         String saved = prefs.sourcePackage();
         if (saved.isEmpty()) return getString(R.string.source_auto);
@@ -208,6 +231,8 @@ public final class SettingsActivity extends Activity {
             case NO_SOURCE: return getString(R.string.status_no_source);
             case NO_PERMISSION: return getString(R.string.status_no_permission);
             case NOTHING: return getString(R.string.status_nothing);
+            case NO_KEY: return getString(R.string.status_no_key);
+            case BAD_KEY: return getString(R.string.status_bad_key);
             case NO_CITY: return getString(R.string.status_no_city);
             case OFFLINE: return getString(R.string.status_offline);
             case FAILED: return getString(R.string.status_failed);

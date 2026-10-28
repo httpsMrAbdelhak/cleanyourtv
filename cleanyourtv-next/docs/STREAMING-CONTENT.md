@@ -1,6 +1,6 @@
 # Content from your streaming app (Nuvio)
 
-The row above the dock, with its chips Explore, Movies and Series, and the Library and My list pages, shows **what your streaming app itself publishes for the Android TV home screen**. No TMDB key, no YouTube key, no account and no server of ours: CleanYourTV reads the app's own rows from the TV.
+The row above the dock, with its chips Explore, Movies and Series, and the Library page, shows **what your streaming app itself publishes for the Android TV home screen**. No account and no server of ours: CleanYourTV reads the app's own rows from the TV. A TMDB key is optional: with one, the pictures are replaced by the poster of the series or film (see below and `TMDB.md`).
 
 ## How it works
 
@@ -11,7 +11,8 @@ Android TV has a content provider for the home screen (`android.media.tv`). An a
 - Movies and Series: the same, filtered by the type the app gave each entry (movie, series, season, episode).
 - OK opens the entry with the intent the app published, or resumes it. For safety, an intent is started only if it targets the chosen app itself.
 - The selected poster widens into a landscape card: the app's landscape poster when it publishes one, otherwise the poster. Its title, year, kind, season and episode badge, and the time left of a started film are shown under it.
-- Library shows every row the app publishes, one under the other. My list shows its watchlist (Watch Next entries of the "watchlist" type).
+- Library shows every row the app publishes, one under the other, the watchlist included.
+- **Posters from TMDB**: apps often publish the still of the episode you are on (Friends, episode 10, shows that episode's picture). With a TMDB key, each card is looked up once per series or film: by the TMDB or IMDb id when the app's intent carries one, otherwise by title (episode numbers stripped; the year for a film). The card then shows the TMDB poster, and its landscape card the TMDB backdrop. A title TMDB does not match keeps the app's picture: no poster is better than a wrong one. Answers are cached 30 days (3 days for a miss); at most 60 new titles are looked up per load.
 - The content stays while you move along the dock, whichever tile is selected.
 
 ## What you must do

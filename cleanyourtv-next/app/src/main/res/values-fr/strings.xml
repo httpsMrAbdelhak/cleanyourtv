@@ -70,7 +70,7 @@
     <string name="status_failed">Erreur</string>
     <string name="status_never">Pas encore utilisé</string>
     <string name="settings_version">Version</string>
-    <string name="about_credits">Données cinéma : TMDB. Météo : Open-Meteo.com (CC BY 4.0). Police : Outfit (SIL Open Font License).</string>
+    <string name="about_credits">Données et affiches des films et séries : TMDB. Ce produit utilise l\'API TMDB mais n\'est ni approuvé ni certifié par TMDB. Météo : Open-Meteo.com (CC BY 4.0). Police : Outfit (SIL Open Font License).</string>
     <string name="value_on">Activé</string>
     <string name="value_off">Désactivé</string>
     <string name="clock_system">Système</string>
@@ -123,10 +123,8 @@
     <string name="status_resume_hint">La reprise de lecture vient de ce que l\'app publie elle-même pour l\'écran d\'accueil TV. Elle apparaît quand l\'app le fait et que la TV l\'autorise ; rien n\'est simulé.</string>
     <string name="nav_home">Accueil</string>
     <string name="nav_library">Bibliothèque</string>
-    <string name="nav_my_list">Ma liste</string>
     <string name="nav_apps">Applications</string>
     <string name="nav_games">Jeux</string>
-    <string name="dock_label">Applis favorites</string>
     <string name="section_next">À suivre</string>
     <string name="section_new">Nouveautés</string>
     <string name="meta_resume">Reprendre</string>
@@ -134,10 +132,26 @@
     <string name="meta_ends">finit à %1$s</string>
     <string name="kind_movie">Film</string>
     <string name="kind_series">Série</string>
-    <string name="my_list_empty">%1$s n\'a publié aucune « liste » pour l\'écran d\'accueil TV. Ajoutez des titres à votre liste dans l\'app.</string>
     <string name="search_title">Recherche</string>
     <string name="search_hint">Nom d\'une application</string>
     <string name="search_none">Aucune application ne porte ce nom</string>
     <string name="games_empty">Aucune application installée ne se déclare comme jeu</string>
     <string name="wallpaper_navy">Bleu nuit</string>
+    <string name="nav_explore">Explorer</string>
+    <string name="section_my_list">Ma liste</string>
+    <string name="trending_movies">Films tendance</string>
+    <string name="trending_series">Séries tendance</string>
+    <string name="trending_no_key">Explorer montre les films et séries en tendance sur TMDB. Ajoutez votre clé TMDB dans les Réglages.</string>
+    <string name="trending_bad_key">TMDB a refusé la clé. Vérifiez-la dans les Réglages.</string>
+    <string name="trending_offline">Pas de réseau : les tendances ne peuvent pas être chargées.</string>
+    <string name="trending_failed">TMDB n\'a pas répondu correctement.</string>
+    <string name="trending_search_in">Cherchez « %1$s » dans %2$s</string>
+    <string name="settings_tmdb_key">Clé TMDB</string>
+    <string name="settings_tmdb_clear">Oublier la clé TMDB saisie</string>
+    <string name="settings_tmdb_hint">Sert à la page Explorer et aux affiches des séries et films de votre app de streaming, au lieu des images d\'épisode. Une clé v3 ou un jeton de lecture v4 de themoviedb.org. Seuls les titres sont envoyés à TMDB.</string>
+    <string name="tmdb_key_typed">Saisie (%1$s)</string>
+    <string name="tmdb_key_build">Dans l\'APK (%1$s)</string>
+    <string name="status_tmdb">TMDB</string>
+    <string name="status_no_key">Aucune clé</string>
+    <string name="status_bad_key">Clé refusée</string>
 </resources>

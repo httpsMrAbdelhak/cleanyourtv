@@ -7,7 +7,7 @@ package com.cleanyourtv.launcher;
 final class Status {
     private Status() { }
 
-    enum Kind { NEVER, OK, STALE, NO_CITY, OFFLINE, FAILED, NO_SOURCE, NO_PERMISSION, NOTHING }
+    enum Kind { NEVER, OK, STALE, NO_CITY, OFFLINE, FAILED, NO_SOURCE, NO_PERMISSION, NOTHING, NO_KEY, BAD_KEY }
 
     static final class Parsed {
         final Kind kind;
@@ -41,6 +41,8 @@ final class Status {
             case "no_source": return new Parsed(Kind.NO_SOURCE, 0);
             case "no_permission": return new Parsed(Kind.NO_PERMISSION, 0);
             case "nothing": return new Parsed(Kind.NOTHING, 0);
+            case "no_key": return new Parsed(Kind.NO_KEY, 0);
+            case "bad_key": return new Parsed(Kind.BAD_KEY, 0);
             default: return new Parsed(Kind.NEVER, 0);
         }
     }

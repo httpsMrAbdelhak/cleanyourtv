@@ -21,6 +21,7 @@ final class Prefs {
     private static final String CITY_LON = "city_lon";
     private static final String SOURCE = "source_package";
     private static final String CUSTOM_LIGHT = "custom_light";
+    private static final String TMDB_KEY = "tmdb_key";
     private static final String STATUS_PREFIX = "status_";
 
     private final SharedPreferences prefs;
@@ -145,6 +146,15 @@ final class Prefs {
 
     void setSourcePackage(String packageName) {
         prefs.edit().putString(SOURCE, packageName == null ? "" : packageName).apply();
+    }
+
+    /** The TMDB key typed in Settings (a v3 key or a v4 read token); empty means the build's key, if any. */
+    String tmdbKey() {
+        return prefs.getString(TMDB_KEY, "");
+    }
+
+    void setTmdbKey(String key) {
+        prefs.edit().putString(TMDB_KEY, key == null ? "" : key.replaceAll("\\s+", "")).apply();
     }
 
     /** The last outcome of an integration ("tmdb", "weather"), shown on the settings screen. */

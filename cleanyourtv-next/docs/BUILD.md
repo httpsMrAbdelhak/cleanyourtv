@@ -69,9 +69,10 @@ Without the Android SDK, the logic and manifest tests can still run with `javac`
 
 ## Getting the posters and the weather to work
 
+- **TMDB (Explore page, series posters)**: give your key to the build or type it in Settings: [TMDB.md](TMDB.md).
 - **Weather**: nothing to set up. Open Settings, Weather city, type a city name, pick the match.
-- **Streaming content**: press OK on "Permission to read the TV home content" in Settings, and turn on the home-screen option inside the streaming app itself. No key. Details and what is unknown in [STREAMING-CONTENT.md](STREAMING-CONTENT.md).
+- **Streaming content**: press OK on "Permission to read the TV home content" in Settings, and turn on the home-screen option inside the streaming app itself. Details and what is unknown in [STREAMING-CONTENT.md](STREAMING-CONTENT.md).
 
 ## Verified and not verified
 
-Said plainly, so nothing is assumed. The GitHub workflow runs the unit tests, the lint and the debug build on every push: its result is the proof of those three. Not verified until you try on the TV: installation, the look of every screen, D-pad behaviour, smoothness and memory on the Mi TV Stick, what Nuvio publishes and whether the TV hands it over, live Open-Meteo answers, and whether the firmware lets this app take the Home button.
+Said plainly, so nothing is assumed. The GitHub workflow runs the unit tests, the lint and the debug build on every push: its result is the proof of those three. Not verified until you try on the TV: installation, the look of every screen, D-pad behaviour, smoothness and memory on the Mi TV Stick, what Nuvio publishes and whether the TV hands it over, live Open-Meteo and TMDB answers, and whether the firmware lets this app take the Home button.

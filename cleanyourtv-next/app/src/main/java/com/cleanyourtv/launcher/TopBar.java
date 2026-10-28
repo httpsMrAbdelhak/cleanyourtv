@@ -18,19 +18,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The bar across the top: an avatar, the sections (Home, Library, My list, Apps, Games), search, and on the
+ * The bar across the top: an avatar, the sections (Home, Library, Explore, Apps, Games), search, and on the
  * right the theme, performance and settings buttons with a pill holding the weather and the time. The section
  * on screen is a filled pill; the focused item lights up. Down leaves the bar, Up does nothing.
  */
 final class TopBar extends LinearLayout {
     static final int HOME = 0;
     static final int LIBRARY = 1;
-    static final int MY_LIST = 2;
+    static final int EXPLORE = 2;
     static final int APPS = 3;
     static final int GAMES = 4;
 
     interface Listener {
-        /** The focus rests on Home, Library or My list: show that page. */
+        /** The focus rests on Home, Library or Explore: show that page. */
         void onSectionFocused(int section);
 
         /** OK on a section (Apps and Games open the drawer). */
@@ -78,7 +78,7 @@ final class TopBar extends LinearLayout {
         avatarParams.rightMargin = Ui.dp(context, 14);
         addView(avatar, avatarParams);
 
-        int[] names = {R.string.nav_home, R.string.nav_library, R.string.nav_my_list, R.string.nav_apps, R.string.nav_games};
+        int[] names = {R.string.nav_home, R.string.nav_library, R.string.nav_explore, R.string.nav_apps, R.string.nav_games};
         for (int i = 0; i < sections.length; i++) {
             final int index = i;
             TextView pill = Ui.text(context, 16, Palette.TEXT, Ui.medium(context));
@@ -89,7 +89,7 @@ final class TopBar extends LinearLayout {
             pill.setClickable(true);
             pill.setDefaultFocusHighlightEnabled(false);
             pill.setOnFocusChangeListener((view, hasFocus) -> {
-                if (hasFocus && index <= MY_LIST) listener.onSectionFocused(index);
+                if (hasFocus && index <= EXPLORE) listener.onSectionFocused(index);
             });
             pill.setOnClickListener(view -> listener.onSectionChosen(index));
             sections[i] = pill;
@@ -220,7 +220,7 @@ final class TopBar extends LinearLayout {
     }
 
     void focusSelected() {
-        sections[Math.min(selected, MY_LIST)].requestFocus();
+        sections[Math.min(selected, EXPLORE)].requestFocus();
     }
 
     boolean contains(View view) {

@@ -68,9 +68,12 @@ final class CardRail extends RailScroll {
         }
     }
 
+    /** New cards. A rail that has the focus keeps it on the same place (new posters arriving must not move it). */
     void setEntries(List<TvEntry> items) {
         boolean hadFocus = hasFocus();
+        int keep = hadFocus ? focus : 0;
         clear();
+        focus = Math.max(0, Math.min(keep, items.size() - 1));
         Context context = getContext();
         for (int i = 0; i < items.size(); i++) {
             final int index = i;

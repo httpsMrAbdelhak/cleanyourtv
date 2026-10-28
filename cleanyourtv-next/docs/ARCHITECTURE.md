@@ -7,9 +7,9 @@ Plain Java on the Android framework. No AndroidX, no Kotlin, no layout XML: ever
 ```
 HomeActivity          host: the wallpaper under one HomeScreen; rebuilds when the theme flips; asks for the TV permission
   HomeScreen          top bar, greeting, chips, the page in the middle, glass dock, ambient light
-    TopBar            avatar, sections (Home, Library, My list, Apps, Games), search, round buttons, weather pill
+    TopBar            avatar, sections (Home, Library, Explore, Apps, Games), search, round buttons, weather pill
     CardRail          a row of posters; the selected one widens to a landscape card; images loaded near the focus only
-    LibraryShelf      the Library page: every row of the app, one rail under the other
+    LibraryShelf      Library (every row of the app) and Explore (trending films and series), one rail under the other
     WeatherPanel      current weather and seven days on one glass card (OK on the weather pill)
     MessageBox        a plain message with one button (no app, no permission, nothing published)
 LibraryActivity       the app drawer: every app as wide banners, or the games, or a search; slides up from the dock
@@ -18,6 +18,8 @@ WallpaperActivity     gallery with live preview; picture from the device
 ```
 
 Where the content comes from (`TvChannels`): the TV's own provider of channels and programs, for the one app chosen in Settings (found by name, "Nuvio", when nothing is chosen). Rows read: Watch Next (shown as "Continue watching") and the app's preview channels. `EntryFilter` applies the chips, `IntentGuard` lets an entry start only the chosen app, `ProgramKind` turns the provider's type numbers into movie, series or other.
+
+TMDB (`Tmdb`, with the pure `TmdbParser`, `TmdbIds`, `TitleKey` and `PosterSwap`): the trending rows of Explore, and the poster and backdrop of the series or film behind each published card, cached on disk. The key comes from Settings or from the build (`BuildConfig.TMDB_KEY`, empty unless `TMDB_API_KEY` is given); it is never in the sources.
 
 ## Design system
 
@@ -47,7 +49,7 @@ Four zones (`NavLogic`): top bar, chips (Home only), content, dock. The dock has
 
 - **Dock**: Left and Right move and stop at both ends; Up goes to the content (or the chips, or the top bar, when there is none); **Down opens the app drawer**; OK opens the app; long OK or Menu edits.
 - **Content**: Left and Right glide along the cards and stop at the ends; the selected poster widens. Up goes to the chips (Home) or the top bar; Down returns to the dock.
-- **Top bar**: resting on Home, Library or My list for 220 ms shows that page; Apps and Games open the drawer on OK. Down enters the page.
+- **Top bar**: resting on Home, Library or Explore for 220 ms shows that page; Apps and Games open the drawer on OK. Down enters the page.
 - **App drawer**: five banners per row; OK opens, long OK adds to or removes from the dock. **Up from the top row returns to the dock**, as Back does: no need to press Back.
 - **Back**: from anywhere it goes down to the dock; on the dock it does nothing.
 - **Home key** while already on Home: back to the dock.
