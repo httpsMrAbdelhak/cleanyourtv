@@ -16,6 +16,7 @@ jobs:
   build:
     name: Unit tests, lint and debug build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: cleanyourtv-next

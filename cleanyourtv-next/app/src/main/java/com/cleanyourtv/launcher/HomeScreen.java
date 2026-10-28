@@ -685,8 +685,12 @@ final class HomeScreen extends FrameLayout implements TopBar.Listener, CardRail.
     /** The light along the bottom takes the colour of the selected app and is brightest under it. */
     private void lightUnder(final BannerTile tile) {
         if (tile.getWidth() == 0) {
-            tile.post(() -> {
-                if (tile.hasFocus()) lightUnder(tile);
+            // Not laid out yet: wait for its layout once, rather than re-posting until it has a width.
+            tile.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override public void onLayoutChange(View view, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                    view.removeOnLayoutChangeListener(this);
+                    if (view.getWidth() > 0 && view.hasFocus()) lightUnder(tile);
+                }
             });
             return;
         }
